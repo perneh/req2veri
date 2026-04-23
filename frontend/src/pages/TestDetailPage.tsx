@@ -12,6 +12,7 @@ export function TestDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams();
   const testId = Number(id);
+  const testIdOk = Number.isFinite(testId);
   const qc = useQueryClient();
   const [linkMode, setLinkMode] = useState<"none" | "requirement" | "sub">("none");
   const [selectedRequirementId, setSelectedRequirementId] = useState<number | "">("");
@@ -21,33 +22,36 @@ export function TestDetailPage() {
   const q = useQuery({
     queryKey: ["test", testId],
     queryFn: () => apiFetch<VerificationTest>(`/tests/${testId}`),
-    enabled: Number.isFinite(testId),
+    enabled: testIdOk,
   });
-
-  if (!Number.isFinite(testId)) return null;
-  if (q.isLoading) return <Typography>{t("common.loading")}</Typography>;
-  if (q.isError) return <Typography color="error">{q.error instanceof Error ? q.error.message : t("common.error")}</Typography>;
-  const te = q.data!;
 
   const reqQ = useQuery({
     queryKey: ["requirements", "for-test-link"],
     queryFn: () => apiFetch<Requirement[]>("/requirements?limit=500"),
-    enabled: Number.isFinite(testId),
+    enabled: testIdOk,
   });
+
+  const subQEnabled =
+    testIdOk &&
+    typeof selectedRequirementId === "number" &&
+    Number.isFinite(selectedRequirementId);
 
   const subQ = useQuery({
     queryKey: ["subrequirements", "for-test-link", selectedRequirementId],
-    queryFn: () => apiFetch<SubRequirement[]>(`/requirements/${selectedRequirementId}/subrequirements`),
-    enabled: Number.isFinite(selectedRequirementId),
+    queryFn: () =>
+      apiFetch<SubRequirement[]>(`/requirements/${selectedRequirementId as number}/subrequirements`),
+    enabled: subQEnabled,
   });
 
   useEffect(() => {
+    const te = q.data;
+    if (!te) return;
     if (te.sub_requirement_id != null) setLinkMode("sub");
     else if (te.requirement_id != null) setLinkMode("requirement");
     else setLinkMode("none");
     setSelectedRequirementId(te.requirement_id ?? "");
     setSelectedSubRequirementId(te.sub_requirement_id ?? "");
-  }, [te.requirement_id, te.sub_requirement_id]);
+  }, [q.data?.requirement_id, q.data?.sub_requirement_id]);
 
   const linkMutation = useMutation({
     mutationFn: async () => {
@@ -98,6 +102,16 @@ export function TestDetailPage() {
     },
     onError: (e: Error) => setLinkMsg(e.message),
   });
+
+  if (!testIdOk) return null;
+  if (q.isLoading) return <Typography>{t("common.loading")}</Typography>;
+  if (q.isError) {
+    return (
+      <Typography color="error">{q.error instanceof Error ? q.error.message : t("common.error")}</Typography>
+    );
+  }
+  const te = q.data;
+  if (!te) return null;
 
   const linkedTo =
     te.requirement_id != null
