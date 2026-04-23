@@ -31,7 +31,7 @@ export function RequirementsOverviewPage() {
         {t("overview.lead")}
       </Typography>
       {q.isLoading && <Typography>{t("common.loading")}</Typography>}
-      {q.isError && <Typography color="error">{t("common.error")}</Typography>}
+      {q.isError && <Typography color="error">{q.error instanceof Error ? q.error.message : t("common.error")}</Typography>}
       {q.data?.map((row) => (
         <Accordion key={row.requirement.id} defaultExpanded={false} disableGutters>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>

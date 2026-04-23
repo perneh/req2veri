@@ -1,5 +1,19 @@
 const base = import.meta.env.VITE_API_BASE ?? "/api";
 
+export class ApiError extends Error {
+  status: number;
+  path: string;
+  detail: unknown;
+
+  constructor(message: string, status: number, path: string, detail: unknown) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.path = path;
+    this.detail = detail;
+  }
+}
+
 function getToken(): string | null {
   return localStorage.getItem("req2veri_token");
 }
@@ -25,11 +39,28 @@ export async function apiFetch<T>(
   const res = await fetch(`${base}${path}`, { ...init, headers, body });
   if (res.status === 204) return undefined as T;
   const text = await res.text();
-  const data = text ? JSON.parse(text) : null;
+  let data: unknown = null;
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = text;
+    }
+  }
   if (!res.ok) {
-    const detail = data?.detail;
-    const msg = typeof detail === "string" ? detail : JSON.stringify(detail ?? data);
-    throw new Error(msg || `HTTP ${res.status}`);
+    const detail =
+      data && typeof data === "object" && "detail" in data
+        ? (data as { detail: unknown }).detail
+        : data;
+    let msg =
+      typeof detail === "string" && detail
+        ? `${detail} (HTTP ${res.status})`
+        : `HTTP ${res.status} on ${path}`;
+    if (res.status === 401) {
+      msg = `${msg}. Sign in again.`;
+      setToken(null);
+    }
+    throw new ApiError(msg, res.status, path, detail);
   }
   return data as T;
 }

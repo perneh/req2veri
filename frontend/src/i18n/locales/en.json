@@ -1,5 +1,8 @@
 {
-  "app": { "name": "req2veri", "tagline": "Requirements to verification" },
+  "app": {
+    "name": "req2veri",
+    "tagline": "Requirements to verification"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "requirements": "Requirements",
@@ -9,8 +12,15 @@
     "login": "Sign in",
     "logout": "Sign out"
   },
-  "theme": { "light": "Light", "dark": "Dark" },
-  "lang": { "en": "English", "sv": "Svenska", "de": "Deutsch" },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "lang": {
+    "en": "English",
+    "sv": "Svenska",
+    "de": "Deutsch"
+  },
   "auth": {
     "email": "Email",
     "username": "Username",
@@ -94,7 +104,21 @@
     "actual": "Actual result",
     "created": "Test saved",
     "listOnPage": "All tests for this requirement and its sub-requirements",
-    "emptyOnDetail": "No tests yet. Use the form above."
+    "emptyOnDetail": "No tests yet. Use the form above.",
+    "backToList": "Back to tests",
+    "linkEditorTitle": "Change requirement link",
+    "linkModeLabel": "Link type",
+    "linkModeNone": "No requirement link",
+    "linkModeRequirement": "Link to requirement",
+    "linkModeSub": "Link to sub-requirement",
+    "linkRequirementLabel": "Requirement",
+    "linkSubRequirementLabel": "Sub-requirement",
+    "linkSelectRequirement": "Select a requirement",
+    "linkSelectSubRequirement": "Select a sub-requirement",
+    "linkSave": "Save link",
+    "linkUpdated": "Link updated",
+    "linkRemove": "Remove link",
+    "linkRemoved": "Link removed"
   },
   "overview": {
     "title": "All requirements and sub-requirements",
@@ -108,7 +132,17 @@
     "key": "Key",
     "name": "Name"
   },
-  "common": { "save": "Save", "cancel": "Cancel", "delete": "Delete", "edit": "Edit", "create": "Create", "loading": "Loading…", "error": "Something went wrong" },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "updatedAt": "Updated at",
+    "updatedBy": "Last editor"
+  },
   "status": {
     "draft": "Draft",
     "approved": "Approved",
@@ -120,7 +154,12 @@
     "failed": "Failed",
     "blocked": "Blocked"
   },
-  "priority": { "low": "Low", "medium": "Medium", "high": "High", "critical": "Critical" },
+  "priority": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "critical": "Critical"
+  },
   "method": {
     "inspection": "Inspection",
     "analysis": "Analysis",

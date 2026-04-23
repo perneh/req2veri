@@ -1,4 +1,5 @@
 import os
+import tempfile
 
 import pytest
 from fastapi.testclient import TestClient
@@ -11,6 +12,7 @@ os.environ.setdefault(
 )
 os.environ.setdefault("RESET_DB_USER", "reset-admin")
 os.environ.setdefault("RESET_DB_PASSWORD", "reset-test-password")
+os.environ.setdefault("BACKUP_DIR", tempfile.mkdtemp(prefix="req2veri_backup_"))
 
 from app.database import get_session  # noqa: E402
 from app.main import create_app  # noqa: E402

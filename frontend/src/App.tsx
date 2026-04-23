@@ -8,6 +8,7 @@ import { NewRequirementPage } from "./pages/NewRequirementPage";
 import { RequirementDetailPage } from "./pages/RequirementDetailPage";
 import { RequirementsListPage } from "./pages/RequirementsListPage";
 import { RequirementsOverviewPage } from "./pages/RequirementsOverviewPage";
+import { TestDetailPage } from "./pages/TestDetailPage";
 import { TestsListPage } from "./pages/TestsListPage";
 import { TestsNewPage } from "./pages/TestsNewPage";
 import { VersionsPage } from "./pages/VersionsPage";
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="/requirements/overview" element={<RequirementsOverviewPage />} />
           <Route path="/requirements/:id" element={<RequirementDetailPage />} />
           <Route path="/tests/new" element={<TestsNewPage />} />
+          <Route path="/tests/:id" element={<TestDetailPage />} />
           <Route path="/tests" element={<TestsListPage />} />
           <Route path="/versions" element={<VersionsPage />} />
         </Route>

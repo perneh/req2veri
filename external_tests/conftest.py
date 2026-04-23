@@ -9,27 +9,6 @@ from support import env, http as http_support
 _SUITE_ORDER = ("suite_00_empty", "suite_10_functional", "suite_99_load")
 
 
-def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addoption(
-        "--req2veri-base-url",
-        action="store",
-        default=None,
-        help="Full API base URL (overrides --host/--port and REQ2VERI_BASE_URL)",
-    )
-    parser.addoption(
-        "--host",
-        action="store",
-        default=None,
-        help="API hostname or IP (default 127.0.0.1 if no REQ2VERI_BASE_URL)",
-    )
-    parser.addoption(
-        "--port",
-        action="store",
-        default=None,
-        help="API port (default 8000 if no REQ2VERI_BASE_URL)",
-    )
-
-
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     """Run suites in order: empty-system checks → functional groups → bulk load."""
 
@@ -44,13 +23,9 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 
 
 @pytest.fixture(scope="session")
-def base_url(pytestconfig: pytest.Config) -> str:
-    return env.resolve_api_root(
-        cli_base_url=pytestconfig.getoption("--req2veri-base-url", default=None),
-        environ=os.environ,
-        host=pytestconfig.getoption("--host", default=None),
-        port=pytestconfig.getoption("--port", default=None),
-    )
+def base_url() -> str:
+    """Target API — set REQ2VERI_BASE_URL or REQ2VERI_API_HOST / REQ2VERI_API_PORT in the environment."""
+    return env.resolve_api_root(environ=os.environ)
 
 
 @pytest.fixture(scope="session")

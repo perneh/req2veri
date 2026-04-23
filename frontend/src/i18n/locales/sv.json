@@ -1,5 +1,8 @@
 {
-  "app": { "name": "req2veri", "tagline": "Krav till verifiering" },
+  "app": {
+    "name": "req2veri",
+    "tagline": "Krav till verifiering"
+  },
   "nav": {
     "dashboard": "Översikt",
     "requirements": "Krav",
@@ -9,8 +12,15 @@
     "login": "Logga in",
     "logout": "Logga ut"
   },
-  "theme": { "light": "Ljust", "dark": "Mörkt" },
-  "lang": { "en": "English", "sv": "Svenska", "de": "Deutsch" },
+  "theme": {
+    "light": "Ljust",
+    "dark": "Mörkt"
+  },
+  "lang": {
+    "en": "English",
+    "sv": "Svenska",
+    "de": "Deutsch"
+  },
   "auth": {
     "email": "E-post",
     "username": "Användarnamn",
@@ -94,7 +104,21 @@
     "actual": "Faktiskt resultat",
     "created": "Test sparat",
     "listOnPage": "Alla tester för detta krav och dess underkrav",
-    "emptyOnDetail": "Inga test än. Använd formuläret ovan."
+    "emptyOnDetail": "Inga test än. Använd formuläret ovan.",
+    "backToList": "Tillbaka till tester",
+    "linkEditorTitle": "Ändra kravkoppling",
+    "linkModeLabel": "Kopplingstyp",
+    "linkModeNone": "Ingen kravkoppling",
+    "linkModeRequirement": "Koppla till krav",
+    "linkModeSub": "Koppla till underkrav",
+    "linkRequirementLabel": "Krav",
+    "linkSubRequirementLabel": "Underkrav",
+    "linkSelectRequirement": "Välj ett krav",
+    "linkSelectSubRequirement": "Välj ett underkrav",
+    "linkSave": "Spara koppling",
+    "linkUpdated": "Koppling uppdaterad",
+    "linkRemove": "Ta bort koppling",
+    "linkRemoved": "Koppling borttagen"
   },
   "overview": {
     "title": "Alla krav och underkrav",
@@ -108,7 +132,17 @@
     "key": "Nyckel",
     "name": "Namn"
   },
-  "common": { "save": "Spara", "cancel": "Avbryt", "delete": "Ta bort", "edit": "Redigera", "create": "Skapa", "loading": "Laddar…", "error": "Något gick fel" },
+  "common": {
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "delete": "Ta bort",
+    "edit": "Redigera",
+    "create": "Skapa",
+    "loading": "Laddar…",
+    "error": "Något gick fel",
+    "updatedAt": "Uppdaterad",
+    "updatedBy": "Senast ändrad av"
+  },
   "status": {
     "draft": "Utkast",
     "approved": "Godkänd",
@@ -120,7 +154,12 @@
     "failed": "Underkänd",
     "blocked": "Blockerad"
   },
-  "priority": { "low": "Låg", "medium": "Medel", "high": "Hög", "critical": "Kritisk" },
+  "priority": {
+    "low": "Låg",
+    "medium": "Medel",
+    "high": "Hög",
+    "critical": "Kritisk"
+  },
   "method": {
     "inspection": "Inspektion",
     "analysis": "Analys",

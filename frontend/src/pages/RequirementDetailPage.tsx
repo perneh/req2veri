@@ -102,7 +102,7 @@ export function RequirementDetailPage() {
 
   if (!Number.isFinite(rid)) return null;
   if (reqQ.isLoading) return <Typography>{t("common.loading")}</Typography>;
-  if (reqQ.isError) return <Typography color="error">{t("common.error")}</Typography>;
+  if (reqQ.isError) return <Typography color="error">{reqQ.error instanceof Error ? reqQ.error.message : t("common.error")}</Typography>;
   const r = reqQ.data!;
 
   return (
@@ -238,6 +238,8 @@ export function RequirementDetailPage() {
                 <TableCell>{t("requirements.reqTitle")}</TableCell>
                 <TableCell>{t("requirements.status")}</TableCell>
                 <TableCell>{t("requirements.priority")}</TableCell>
+                <TableCell>{t("common.updatedAt")}</TableCell>
+                <TableCell>{t("common.updatedBy")}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -249,6 +251,8 @@ export function RequirementDetailPage() {
                     <StatusChip value={s.status} />
                   </TableCell>
                   <TableCell>{t(`priority.${s.priority}` as never)}</TableCell>
+                  <TableCell>{new Date(s.updated_at).toLocaleString()}</TableCell>
+                  <TableCell>{s.updated_by || "—"}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

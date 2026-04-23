@@ -1,25 +1,19 @@
-def _register_and_token(client):
-    client.post(
-        "/auth/register",
-        json={"username": "u1", "email": "u1@example.com", "password": "pw12345678"},
-    )
-    r = client.post("/auth/token", data={"username": "u1", "password": "pw12345678"})
-    assert r.status_code == 200
-    return r.json()["access_token"]
+from tests.helpers import register_and_token, register_and_token_as
 
 
-def _register_and_token_as(client, username: str):
-    client.post(
-        "/auth/register",
-        json={"username": username, "email": f"{username}@example.com", "password": "pw12345678"},
-    )
-    r = client.post("/auth/token", data={"username": username, "password": "pw12345678"})
+def test_public_health_and_logs_endpoints(client):
+    r = client.get("/health")
     assert r.status_code == 200
-    return r.json()["access_token"]
+    assert r.json() == {"status": "ok"}
+
+    r = client.get("/logs")
+    assert r.status_code == 200
+    assert "path" in r.json()
+    assert isinstance(r.json()["lines"], list)
 
 
 def test_requirement_crud(client):
-    token = _register_and_token(client)
+    token = register_and_token(client)
     headers = {"Authorization": f"Bearer {token}"}
 
     r = client.post(
@@ -72,7 +66,7 @@ def test_requirement_crud(client):
 
 
 def test_standalone_test_and_reference_filter(client):
-    token = _register_and_token(client)
+    token = register_and_token(client)
     headers = {"Authorization": f"Bearer {token}"}
 
     r = client.post(
@@ -139,8 +133,38 @@ def test_standalone_test_and_reference_filter(client):
     assert all(x["requirement_id"] is not None or x["sub_requirement_id"] is not None for x in r.json())
 
 
+def test_admin_backup_database_basic_auth_and_sqlite_file(client):
+    from pathlib import Path
+
+    r = client.post("/admin/backup-database", auth=("reset-admin", "wrong"))
+    assert r.status_code == 401
+
+    r = client.post("/admin/backup-database", auth=("reset-admin", "reset-test-password"))
+    assert r.status_code == 200
+    data = r.json()
+    assert data["ok"] is True
+    assert data["format"] == "sqlite_copy"
+    assert data["bytes"] > 0
+
+    name = Path(data["path"]).name
+    assert Path(data["path"]).is_file()
+
+    r_del_bad = client.delete(f"/admin/backups/{name}", auth=("reset-admin", "wrong"))
+    assert r_del_bad.status_code == 401
+
+    r_del = client.delete(f"/admin/backups/{name}", auth=("reset-admin", "reset-test-password"))
+    assert r_del.status_code == 204
+    assert not Path(data["path"]).is_file()
+
+    r_again = client.delete(f"/admin/backups/{name}", auth=("reset-admin", "reset-test-password"))
+    assert r_again.status_code == 404
+
+    r_bad_name = client.delete("/admin/backups/evil.txt", auth=("reset-admin", "reset-test-password"))
+    assert r_bad_name.status_code == 400
+
+
 def test_admin_reset_database_password_protected(client):
-    token = _register_and_token(client)
+    token = register_and_token(client)
     headers = {"Authorization": f"Bearer {token}"}
 
     r = client.post(
@@ -164,7 +188,7 @@ def test_admin_reset_database_password_protected(client):
     assert r.json()["ok"] is True
 
     # Old token user is gone after full DB reset; register a fresh user.
-    token2 = _register_and_token(client)
+    token2 = register_and_token(client)
     r = client.get("/requirements", headers={"Authorization": f"Bearer {token2}"})
     assert r.status_code == 200
     assert r.json() == []
@@ -174,7 +198,7 @@ def test_users_list_requires_auth_and_returns_registered_users(client):
     r = client.get("/users")
     assert r.status_code == 401
 
-    token = _register_and_token(client)
+    token = register_and_token(client)
     r = client.get("/users", headers={"Authorization": f"Bearer {token}"})
     assert r.status_code == 200
     users = r.json()
@@ -182,8 +206,8 @@ def test_users_list_requires_auth_and_returns_registered_users(client):
 
 
 def test_updated_by_and_updated_at_for_req_sub_and_test(client):
-    token_u1 = _register_and_token_as(client, "u1a")
-    token_u2 = _register_and_token_as(client, "u2a")
+    token_u1 = register_and_token_as(client, "u1a")
+    token_u2 = register_and_token_as(client, "u2a")
     h1 = {"Authorization": f"Bearer {token_u1}"}
     h2 = {"Authorization": f"Bearer {token_u2}"}
 
@@ -253,3 +277,99 @@ def test_updated_by_and_updated_at_for_req_sub_and_test(client):
     assert tr2.status_code == 200
     assert tr2.json()["updated_by"] == "u2a"
     assert tr2.json()["updated_at"]
+
+
+def test_entity_history_list_restore_delete(client):
+    token = register_and_token(client)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    rr = client.post(
+        "/requirements",
+        headers=headers,
+        json={
+            "key": "REQ-HIST-1",
+            "title": "Original title",
+            "description": "D",
+            "status": "draft",
+            "priority": "low",
+        },
+    )
+    assert rr.status_code == 201
+    rid = rr.json()["id"]
+
+    h0 = client.get(f"/requirements/{rid}/history", headers=headers)
+    assert h0.status_code == 200
+    assert len(h0.json()) == 1
+    assert h0.json()[0]["version"] == 1
+
+    client.patch(f"/requirements/{rid}", headers=headers, json={"title": "Edited title"})
+    h1 = client.get(f"/requirements/{rid}/history", headers=headers)
+    assert h1.status_code == 200
+    assert len(h1.json()) == 2
+    by_v = {x["version"]: x["id"] for x in h1.json()}
+    hid_v1 = by_v[1]
+    detail = client.get(f"/requirements/{rid}/history/{hid_v1}", headers=headers)
+    assert detail.status_code == 200
+    assert detail.json()["snapshot"]["title"] == "Original title"
+
+    rest = client.post(f"/requirements/{rid}/history/{hid_v1}/restore", headers=headers)
+    assert rest.status_code == 200
+    assert rest.json()["title"] == "Original title"
+
+    h2 = client.get(f"/requirements/{rid}/history", headers=headers)
+    assert len(h2.json()) == 3
+    hid_v2 = next(x["id"] for x in h2.json() if x["version"] == 2)
+    dl = client.delete(f"/requirements/{rid}/history/{hid_v2}", headers=headers)
+    assert dl.status_code == 204
+    h3 = client.get(f"/requirements/{rid}/history", headers=headers)
+    assert len(h3.json()) == 2
+
+    sr = client.post(
+        f"/requirements/{rid}/subrequirements",
+        headers=headers,
+        json={
+            "key": "REQ-HIST-1.1",
+            "title": "Sub orig",
+            "description": "",
+            "status": "draft",
+            "priority": "low",
+        },
+    )
+    assert sr.status_code == 201
+    sid = sr.json()["id"]
+    assert len(client.get(f"/subrequirements/{sid}/history", headers=headers).json()) == 1
+    client.patch(f"/subrequirements/{sid}", headers=headers, json={"title": "Sub new"})
+    sh = client.get(f"/subrequirements/{sid}/history", headers=headers)
+    assert len(sh.json()) == 2
+    sub_hid = next(x["id"] for x in sh.json() if x["version"] == 1)
+    assert (
+        client.get(f"/subrequirements/{sid}/history/{sub_hid}", headers=headers).json()["snapshot"]["title"]
+        == "Sub orig"
+    )
+    assert client.post(f"/subrequirements/{sid}/history/{sub_hid}/restore", headers=headers).status_code == 200
+    assert client.delete(f"/subrequirements/{sid}/history/{sub_hid}", headers=headers).status_code == 204
+
+    tr = client.post(
+        "/tests",
+        headers=headers,
+        json={
+            "key": "TEST-HIST-1",
+            "title": "Test orig",
+            "description": "",
+            "precondition": "",
+            "action": "",
+            "method": "test",
+            "requirement_id": None,
+            "sub_requirement_id": None,
+            "expected_result": "",
+        },
+    )
+    assert tr.status_code == 201
+    tid = tr.json()["id"]
+    assert len(client.get(f"/tests/{tid}/history", headers=headers).json()) == 1
+    client.patch(f"/tests/{tid}", headers=headers, json={"title": "Test new"})
+    th = client.get(f"/tests/{tid}/history", headers=headers)
+    thid = next(x["id"] for x in th.json() if x["version"] == 1)
+    assert client.get(f"/tests/{tid}/history/{thid}", headers=headers).json()["snapshot"]["title"] == "Test orig"
+    assert client.post(f"/tests/{tid}/history/{thid}/restore", headers=headers).status_code == 200
+    assert client.delete(f"/tests/{tid}/history/{thid}", headers=headers).status_code == 204

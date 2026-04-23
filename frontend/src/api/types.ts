@@ -17,6 +17,7 @@ export type Requirement = {
   priority: Priority;
   created_at: string;
   updated_at: string;
+  updated_by: string;
 };
 
 export type SubRequirement = {
@@ -29,6 +30,7 @@ export type SubRequirement = {
   priority: Priority;
   created_at: string;
   updated_at: string;
+  updated_by: string;
 };
 
 export type VerificationTest = {
@@ -46,6 +48,7 @@ export type VerificationTest = {
   actual_result: string;
   created_at: string;
   updated_at: string;
+  updated_by: string;
 };
 
 export type DashboardSummary = {

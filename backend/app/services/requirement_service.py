@@ -11,6 +11,7 @@ from app.repositories.requirement_repo import RequirementRepository
 from app.repositories.sub_requirement_repo import SubRequirementRepository
 from app.schemas.requirement import RequirementCoverage, RequirementCreate, RequirementHierarchyItem, RequirementRead, RequirementUpdate
 from app.schemas.sub_requirement import SubRequirementRead
+from app.services.history_service import HistoryService
 
 
 class RequirementService:
@@ -55,10 +56,13 @@ class RequirementService:
             )
         obj = Requirement.model_validate(data)
         obj.updated_by = actor
-        return self.reqs.create(obj)
+        created = self.reqs.create(obj)
+        HistoryService(self.session).record_requirement_snapshot(created, actor=actor)
+        return created
 
     def update(self, req_id: int, data: RequirementUpdate, *, actor: str) -> Requirement:
         r = self.get(req_id)
+        HistoryService(self.session).record_requirement_snapshot(r, actor=actor)
         payload = data.model_dump(exclude_unset=True)
         if "key" in payload and payload["key"] != r.key:
             if self.reqs.get_by_key(payload["key"]):

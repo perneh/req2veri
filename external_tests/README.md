@@ -11,12 +11,27 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-## Configuration (base URL precedence)
+## Configuration (API target — environment only)
 
-1. `pytest --req2veri-base-url=…`
-2. If `--host` and/or `--port` is set → `http://{host}:{port}/`
-3. Else `REQ2VERI_BASE_URL`
-4. Else `http://127.0.0.1:8000`
+Switch **which backend** the suite talks to by exporting variables before `pytest` (no custom URL flags on the pytest command).
+
+| Variable | Role |
+|----------|------|
+| **`REQ2VERI_BASE_URL`** | If set, full API root (scheme + host + optional port + path). Example: `http://127.0.0.1:8000` or `https://staging.example.com/api`. Trailing slash is stripped. |
+| **`REQ2VERI_API_HOST`** | Used only when `REQ2VERI_BASE_URL` is unset. Default: `127.0.0.1` |
+| **`REQ2VERI_API_PORT`** | Used only when `REQ2VERI_BASE_URL` is unset. Default: `8000` |
+
+Effective URL when `REQ2VERI_BASE_URL` is unset: `http://{REQ2VERI_API_HOST}:{REQ2VERI_API_PORT}`.
+
+Examples:
+
+```bash
+export REQ2VERI_BASE_URL=http://my-cluster.local:8080
+pytest suite_10_functional
+
+export REQ2VERI_API_HOST=192.168.1.50 REQ2VERI_API_PORT=9000
+pytest
+```
 
 ## Suites (order)
 
@@ -24,7 +39,7 @@ pip install -r requirements.txt
 |------|-------------|------|
 | 1 | `suite_00_empty/` | Expects **no** requirements, sub-requirements, or tests in the DB (see below). |
 | 2 | `suite_10_functional/` | One module per **endpoint group** (auth, users, requirements, subrequirements, tests, dashboard, versions). |
-| 3 | `suite_99_load/` | Bulk tree: **500** requirements × **10** sub-requirements × **2** tests per sub (marker `@load`). |
+| 3 | `suite_99_load/` | Bulk tree: **500** requirements × **10** sub-requirements × **2** tests per sub (marker `@load`). Also **version/run trends**: several `test-object-versions`, multiple verification tests, and one `POST …/runs` per (version, test) with varied statuses so per-version and per-test outcomes differ (asserted via `GET …/runs`). |
 
 In the load suite, test-case creation is distributed round-robin across **10 different users**.
 
@@ -39,7 +54,8 @@ Optional convenience: if either `REQ2VERI_RESET_DB_USER` + `REQ2VERI_RESET_DB_PA
 ## Run
 
 ```bash
-pytest --host=127.0.0.1 --port=8000
+# Default target: http://127.0.0.1:8000 (override with REQ2VERI_BASE_URL or HOST/PORT — see above)
+pytest
 # Skip the heavy load test (~15k HTTP requests by default):
 pytest -m "not load"
 # Only the bulk scenario:
@@ -100,7 +116,11 @@ pytest suite_10_functional -x -v
 | `REQ2VERI_LOAD_REQS` | `500` |
 | `REQ2VERI_LOAD_SUBS_PER_REQ` | `10` |
 | `REQ2VERI_LOAD_TESTS_PER_SUB` | `2` |
+| `REQ2VERI_LOAD_TREND_VERSIONS` | `4` (test-object versions in `test_version_run_trends`) |
+| `REQ2VERI_LOAD_TREND_TESTS` | `3` (verification tests, each with one run per version) |
 
 Example smoke with smaller tree: `REQ2VERI_LOAD_REQS=2 REQ2VERI_LOAD_SUBS_PER_REQ=3 pytest -m load`.
+
+Smaller version-trend only: `REQ2VERI_LOAD_TREND_VERSIONS=2 REQ2VERI_LOAD_TREND_TESTS=2 pytest suite_99_load/test_version_run_trends.py -m load`.
 
 Helpers live under `support/`; tests stay thin.

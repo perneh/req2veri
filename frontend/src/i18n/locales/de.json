@@ -1,5 +1,8 @@
 {
-  "app": { "name": "req2veri", "tagline": "Anforderungen zur Verifikation" },
+  "app": {
+    "name": "req2veri",
+    "tagline": "Anforderungen zur Verifikation"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "requirements": "Anforderungen",
@@ -9,8 +12,15 @@
     "login": "Anmelden",
     "logout": "Abmelden"
   },
-  "theme": { "light": "Hell", "dark": "Dunkel" },
-  "lang": { "en": "English", "sv": "Svenska", "de": "Deutsch" },
+  "theme": {
+    "light": "Hell",
+    "dark": "Dunkel"
+  },
+  "lang": {
+    "en": "English",
+    "sv": "Svenska",
+    "de": "Deutsch"
+  },
   "auth": {
     "email": "E-Mail",
     "username": "Benutzername",
@@ -94,7 +104,21 @@
     "actual": "Tatsächliches Ergebnis",
     "created": "Test gespeichert",
     "listOnPage": "Alle Tests für diese Anf. und deren Unter-ANF",
-    "emptyOnDetail": "Noch keine Tests. Formular oben nutzen."
+    "emptyOnDetail": "Noch keine Tests. Formular oben nutzen.",
+    "backToList": "Zurück zu Tests",
+    "linkEditorTitle": "Anforderungsverknüpfung ändern",
+    "linkModeLabel": "Verknüpfungstyp",
+    "linkModeNone": "Keine Anforderungsverknüpfung",
+    "linkModeRequirement": "Mit Anforderung verknüpfen",
+    "linkModeSub": "Mit Unteranforderung verknüpfen",
+    "linkRequirementLabel": "Anforderung",
+    "linkSubRequirementLabel": "Unteranforderung",
+    "linkSelectRequirement": "Anforderung auswählen",
+    "linkSelectSubRequirement": "Unteranforderung auswählen",
+    "linkSave": "Verknüpfung speichern",
+    "linkUpdated": "Verknüpfung aktualisiert",
+    "linkRemove": "Verknüpfung entfernen",
+    "linkRemoved": "Verknüpfung entfernt"
   },
   "overview": {
     "title": "Alle Anforderungen und Unteranforderungen",
@@ -108,7 +132,17 @@
     "key": "Schlüssel",
     "name": "Name"
   },
-  "common": { "save": "Speichern", "cancel": "Abbrechen", "delete": "Löschen", "edit": "Bearbeiten", "create": "Anlegen", "loading": "Laden…", "error": "Etwas ist schiefgelaufen" },
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "create": "Anlegen",
+    "loading": "Laden…",
+    "error": "Etwas ist schiefgelaufen",
+    "updatedAt": "Aktualisiert am",
+    "updatedBy": "Zuletzt bearbeitet von"
+  },
   "status": {
     "draft": "Entwurf",
     "approved": "Genehmigt",
@@ -120,7 +154,12 @@
     "failed": "Fehlgeschlagen",
     "blocked": "Blockiert"
   },
-  "priority": { "low": "Niedrig", "medium": "Mittel", "high": "Hoch", "critical": "Kritisch" },
+  "priority": {
+    "low": "Niedrig",
+    "medium": "Mittel",
+    "high": "Hoch",
+    "critical": "Kritisch"
+  },
   "method": {
     "inspection": "Inspektion",
     "analysis": "Analyse",

@@ -7,11 +7,14 @@ from sqlmodel import SQLModel
 
 from app.models import (  # noqa: F401 - register metadata
     Requirement,
+    RequirementHistory,
     SubRequirement,
+    SubRequirementHistory,
     TestObjectVersion,
     TestRun,
     User,
     VerificationTest,
+    VerificationTestHistory,
 )
 
 config = context.config

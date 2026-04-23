@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60 * 24
     reset_db_user: str = ""
     reset_db_password: str = ""
+    backup_dir: str = "backups"
     app_log_file: str = "logs/app.log"
     app_log_level: str = "INFO"
     app_log_max_bytes: int = 5 * 1024 * 1024

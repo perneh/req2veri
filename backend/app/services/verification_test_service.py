@@ -7,6 +7,7 @@ from app.models import SubRequirement, VerificationTest
 from app.repositories.sub_requirement_repo import SubRequirementRepository
 from app.repositories.verification_test_repo import VerificationTestRepository
 from app.schemas.verification_test import VerificationTestCreate, VerificationTestUpdate
+from app.services.history_service import HistoryService
 from app.services.requirement_service import RequirementService
 
 
@@ -21,14 +22,17 @@ def _validate_parent_state(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Cannot set both requirement_id and sub_requirement_id",
         )
-    if requirement_id is not None:
-        RequirementService(session).get(requirement_id)
-    if sub_requirement_id is not None:
-        sub = session.get(SubRequirement, sub_requirement_id)
-        if sub is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Sub-requirement not found"
-            )
+    # Avoid autoflush: a pending VerificationTest with an invalid FK would flush before
+    # the parent lookup and raise IntegrityError instead of a clean 404.
+    with session.no_autoflush:
+        if requirement_id is not None:
+            RequirementService(session).get(requirement_id)
+        if sub_requirement_id is not None:
+            sub = session.get(SubRequirement, sub_requirement_id)
+            if sub is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND, detail="Sub-requirement not found"
+                )
 
 
 class VerificationTestService:
@@ -54,7 +58,8 @@ class VerificationTestService:
         return self.repo.list_for_requirement(requirement_id)
 
     def list_for_sub_requirement(self, sub_requirement_id: int) -> list[VerificationTest]:
-        self.sub_repo.get(sub_requirement_id)
+        if self.sub_repo.get(sub_requirement_id) is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sub-requirement not found")
         return self.repo.list_for_sub_requirement(sub_requirement_id)
 
     def get(self, test_id: int) -> VerificationTest:
@@ -69,10 +74,13 @@ class VerificationTestService:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Test key already exists")
         obj = VerificationTest.model_validate(data)
         obj.updated_by = actor
-        return self.repo.create(obj)
+        created = self.repo.create(obj)
+        HistoryService(self.session).record_verification_test_snapshot(created, actor=actor)
+        return created
 
     def update(self, test_id: int, data: VerificationTestUpdate, *, actor: str) -> VerificationTest:
         t = self.get(test_id)
+        HistoryService(self.session).record_verification_test_snapshot(t, actor=actor)
         payload = data.model_dump(exclude_unset=True)
         old_key = t.key
         if "requirement_id" in payload and payload["requirement_id"] is not None:

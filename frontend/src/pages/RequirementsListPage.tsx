@@ -74,7 +74,7 @@ export function RequirementsListPage() {
         </Box>
       </Paper>
       {query.isLoading && <Typography>{t("common.loading")}</Typography>}
-      {query.isError && <Typography color="error">{t("common.error")}</Typography>}
+      {query.isError && <Typography color="error">{query.error instanceof Error ? query.error.message : t("common.error")}</Typography>}
       {query.data && (
         <Table component={Paper} size="small">
           <TableHead>
@@ -83,6 +83,8 @@ export function RequirementsListPage() {
               <TableCell>{t("requirements.reqTitle")}</TableCell>
               <TableCell>{t("requirements.status")}</TableCell>
               <TableCell>{t("requirements.priority")}</TableCell>
+              <TableCell>{t("common.updatedAt")}</TableCell>
+              <TableCell>{t("common.updatedBy")}</TableCell>
               <TableCell>{t("requirements.actions")}</TableCell>
             </TableRow>
           </TableHead>
@@ -103,6 +105,8 @@ export function RequirementsListPage() {
                   <StatusChip value={r.status} />
                 </TableCell>
                 <TableCell>{t(`priority.${r.priority}` as never)}</TableCell>
+                <TableCell>{new Date(r.updated_at).toLocaleString()}</TableCell>
+                <TableCell>{r.updated_by || "—"}</TableCell>
                 <TableCell sx={{ whiteSpace: "nowrap" }}>
                   <Button component={Link} to={`/requirements/${r.id}`} size="small">
                     {t("requirements.view")}

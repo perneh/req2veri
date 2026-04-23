@@ -36,6 +36,11 @@ export function createAppTheme(mode: PaletteMode) {
       h6: { fontWeight: 600, fontSize: "1rem" },
     },
     components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          body: { backgroundColor: "transparent" },
+        },
+      },
       MuiAppBar: {
         styleOverrides: {
           root: {

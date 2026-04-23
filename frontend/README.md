@@ -2,6 +2,8 @@
 
 React SPA using Vite, MUI, TanStack Query, and `react-i18next` with **English**, **Swedish**, and **German** resources under `src/i18n/locales`.
 
+**End-user walkthrough:** [HOWTO.md](HOWTO.md)
+
 ## URLs (local dev)
 
 | What | URL |

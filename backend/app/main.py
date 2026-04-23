@@ -1,4 +1,7 @@
-from fastapi import FastAPI
+from collections import deque
+from pathlib import Path
+
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import admin, auth, dashboard, requirements, subrequirements, test_versions, tests, users
@@ -32,6 +35,15 @@ def create_app() -> FastAPI:
     @app.get("/health")
     def health():
         return {"status": "ok"}
+
+    @app.get("/logs")
+    def logs(lines: int = Query(200, ge=1, le=200)):
+        path = Path(settings.app_log_file)
+        if not path.exists():
+            return {"path": str(path), "lines": []}
+        with path.open("r", encoding="utf-8", errors="replace") as f:
+            tail = deque(f, maxlen=lines)
+        return {"path": str(path), "lines": [x.rstrip("\n") for x in tail]}
 
     return app
 

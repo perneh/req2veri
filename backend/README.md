@@ -10,8 +10,9 @@ FastAPI service with layered modules: `api/routes`, `services`, `repositories`, 
 | `CORS_ORIGINS` | Comma-separated browser origins (e.g. `http://localhost:5173,http://127.0.0.1:5173`) |
 | `JWT_SECRET_KEY` | Symmetric key for access tokens |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Token lifetime (default 1440) |
-| `RESET_DB_USER` | Basic-auth username for `POST /admin/reset-database` (dev/test only) |
-| `RESET_DB_PASSWORD` | Basic-auth password for `POST /admin/reset-database` (dev/test only) |
+| `RESET_DB_USER` | Basic-auth username for `POST /admin/reset-database` and `POST /admin/backup-database` (dev/test only) |
+| `RESET_DB_PASSWORD` | Basic-auth password for those admin endpoints (dev/test only) |
+| `BACKUP_DIR` | Directory for `POST /admin/backup-database` output (default `backups` under the process cwd) |
 | `APP_LOG_FILE` | File path for backend logs (default `logs/app.log`) |
 | `APP_LOG_LEVEL` | Log level for file logging (default `INFO`) |
 | `APP_LOG_MAX_BYTES` | Rotate log file when larger than this many bytes (default `5242880`) |
@@ -54,7 +55,7 @@ alembic upgrade head
 
 ## API overview
 
-Public health check: `GET /health`.
+Public endpoints: `GET /health`, `GET /logs?lines=200` (latest log lines, max 200).
 
 All JSON APIs except registration and token exchange require `Authorization: Bearer <token>`.
 Requirement, sub-requirement, and verification-test read payloads include `updated_at` and `updated_by`.
@@ -67,9 +68,10 @@ Requirement, sub-requirement, and verification-test read payloads include `updat
 | Sub-requirements | `GET/POST /requirements/{id}/subrequirements`, `GET/PATCH/DELETE /subrequirements/{id}` |
 | Tests | `GET/POST /tests` (body includes `precondition`, `action`, optional requirement links; `status` / `actual_result` default for new tests), `GET /tests?reference=` `any` / `linked` / `unlinked`, `GET/PATCH/DELETE /tests/{id}`, `GET/POST /requirements/{id}/tests`, `GET/POST /subrequirements/{id}/tests` |
 | Coverage / trace | `GET /requirements/{id}/coverage`, `GET /requirements/{id}/traceability` |
+| Version history | Per entity: `GET …/{id}/history`, `GET …/history/{hid}`, `POST …/history/{hid}/restore`, `DELETE …/history/{hid}` on `/requirements/…`, `/subrequirements/…`, and `/tests/…` (Bearer auth). |
 | Dashboard | `GET /dashboard/summary` |
 | CI versions | `GET/POST /test-object-versions`, `GET/POST /test-object-versions/{id}/runs` |
-| Admin | `POST /admin/reset-database` (HTTP Basic auth with `RESET_DB_USER` / `RESET_DB_PASSWORD`; resets all tables) |
+| Admin | `POST /admin/reset-database`, `POST /admin/backup-database`, `DELETE /admin/backups/{filename}` — HTTP Basic (`RESET_DB_USER` / `RESET_DB_PASSWORD`); backup uses `BACKUP_DIR` (see Configuration). |
 
 ## Tests
 
@@ -77,5 +79,7 @@ Requirement, sub-requirement, and verification-test read payloads include `updat
 cd backend
 source .venv/bin/activate
 pip install pytest
-PYTHONPATH=. pytest
+PYTHONPATH=. pytest tests/
 ```
+
+Broad HTTP positive/negative cases live in `tests/test_endpoint_coverage.py`; flow tests in `tests/test_requirements_api.py`.

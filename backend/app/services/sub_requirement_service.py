@@ -6,6 +6,7 @@ from sqlmodel import Session, select
 from app.models import SubRequirement
 from app.repositories.sub_requirement_repo import SubRequirementRepository
 from app.schemas.sub_requirement import SubRequirementCreate, SubRequirementUpdate
+from app.services.history_service import HistoryService
 from app.services.requirement_service import RequirementService
 
 
@@ -45,10 +46,13 @@ class SubRequirementService:
             parent_requirement_id=requirement_id,
         )
         obj.updated_by = actor
-        return self.repo.create(obj)
+        created = self.repo.create(obj)
+        HistoryService(self.session).record_sub_requirement_snapshot(created, actor=actor)
+        return created
 
     def update(self, sub_id: int, data: SubRequirementUpdate, *, actor: str) -> SubRequirement:
         s = self.get(sub_id)
+        HistoryService(self.session).record_sub_requirement_snapshot(s, actor=actor)
         payload = data.model_dump(exclude_unset=True)
         if "key" in payload and payload["key"] != s.key:
             if self.session.exec(

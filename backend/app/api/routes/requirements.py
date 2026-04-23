@@ -7,6 +7,7 @@ from app.database import get_session
 from app.dependencies import CurrentUser
 from app.models import Requirement
 from app.models.enums import RequirementStatus
+from app.schemas.history import HistoryEntryMeta, RequirementHistoryDetail
 from app.schemas.requirement import (
     RequirementCoverage,
     RequirementCreate,
@@ -16,6 +17,7 @@ from app.schemas.requirement import (
 )
 from app.schemas.sub_requirement import SubRequirementCreate, SubRequirementRead, SubRequirementUpdate
 from app.schemas.verification_test import VerificationTestCreate, VerificationTestRead, VerificationTestUpdate
+from app.services.history_service import HistoryService
 from app.services.requirement_service import RequirementService
 from app.services.sub_requirement_service import SubRequirementService
 from app.services.verification_test_service import VerificationTestService
@@ -61,6 +63,52 @@ def get_requirement(
     requirement_id: int,
 ) -> Requirement:
     return RequirementService(session).get(requirement_id)
+
+
+@router.get("/{requirement_id}/history", response_model=list[HistoryEntryMeta])
+def list_requirement_history(
+    _: CurrentUser,
+    session: Annotated[Session, Depends(get_session)],
+    requirement_id: int,
+) -> list:
+    return HistoryService(session).list_requirement_history(requirement_id)
+
+
+@router.get("/{requirement_id}/history/{history_id}", response_model=RequirementHistoryDetail)
+def get_requirement_history_entry(
+    _: CurrentUser,
+    session: Annotated[Session, Depends(get_session)],
+    requirement_id: int,
+    history_id: int,
+):
+    h = HistoryService(session).get_requirement_history(requirement_id, history_id)
+    return RequirementHistoryDetail(
+        id=h.id,  # type: ignore[arg-type]
+        version=h.version,
+        created_at=h.created_at,
+        created_by=h.created_by,
+        snapshot=RequirementRead.model_validate(h.snapshot),
+    )
+
+
+@router.post("/{requirement_id}/history/{history_id}/restore", response_model=RequirementRead)
+def restore_requirement_version(
+    user: CurrentUser,
+    session: Annotated[Session, Depends(get_session)],
+    requirement_id: int,
+    history_id: int,
+):
+    return HistoryService(session).restore_requirement(requirement_id, history_id, actor=user.username)
+
+
+@router.delete("/{requirement_id}/history/{history_id}", status_code=204)
+def delete_requirement_history_entry(
+    _: CurrentUser,
+    session: Annotated[Session, Depends(get_session)],
+    requirement_id: int,
+    history_id: int,
+) -> None:
+    HistoryService(session).delete_requirement_history(requirement_id, history_id)
 
 
 @router.patch("/{requirement_id}", response_model=RequirementRead)
