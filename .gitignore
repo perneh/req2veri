@@ -212,6 +212,19 @@ __marimo__/
 # Local prompts (not tracked)
 prompts_dir/
 
+# Node (frontend); do not commit dependencies
+node_modules/
+
+# Playwright (E2E): reports and traces if generated under repo root
+playwright-report/
+test-results/
+blob-report/
+.playwright/
+
+# Vite local env overrides
+.env.local
+.env.*.local
+
 # macOS Finder metadata
 .DS_Store
 

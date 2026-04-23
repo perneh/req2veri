@@ -11,17 +11,19 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-## Configuration (API target — environment only)
+## Configuration (API target)
 
-Switch **which backend** the suite talks to by exporting variables before `pytest` (no custom URL flags on the pytest command).
+Switch **which backend** the suite talks to using **pytest** ``--host`` / ``--port`` and/or environment variables (same precedence idea as [external_frontend_tests](../external_frontend_tests/README.md)).
 
-| Variable | Role |
-|----------|------|
-| **`REQ2VERI_BASE_URL`** | If set, full API root (scheme + host + optional port + path). Example: `http://127.0.0.1:8000` or `https://staging.example.com/api`. Trailing slash is stripped. |
-| **`REQ2VERI_API_HOST`** | Used only when `REQ2VERI_BASE_URL` is unset. Default: `127.0.0.1` |
-| **`REQ2VERI_API_PORT`** | Used only when `REQ2VERI_BASE_URL` is unset. Default: `8000` |
+| Source | Role |
+|--------|------|
+| **`REQ2VERI_BASE_URL`** | If set, full API root (scheme + host + optional port + path). Example: `http://127.0.0.1:8000` or `https://staging.example.com/api`. Trailing slash is stripped. **When set, ``--host`` / ``--port`` are ignored.** |
+| **`pytest --host HOST`** | Used only when `REQ2VERI_BASE_URL` is unset. Overrides `REQ2VERI_API_HOST`. Default host if nothing else set: `127.0.0.1` |
+| **`pytest --port PORT`** | Used only when `REQ2VERI_BASE_URL` is unset. Overrides `REQ2VERI_API_PORT`. Default port if nothing else set: `8000` |
+| **`REQ2VERI_API_HOST`** | Used when `REQ2VERI_BASE_URL` is unset and ``--host`` is not passed. |
+| **`REQ2VERI_API_PORT`** | Used when `REQ2VERI_BASE_URL` is unset and ``--port`` is not passed. |
 
-Effective URL when `REQ2VERI_BASE_URL` is unset: `http://{REQ2VERI_API_HOST}:{REQ2VERI_API_PORT}`.
+Effective URL when `REQ2VERI_BASE_URL` is unset: `http://{HOST}:{PORT}`.
 
 Examples:
 
@@ -31,6 +33,8 @@ pytest suite_10_functional
 
 export REQ2VERI_API_HOST=192.168.1.50 REQ2VERI_API_PORT=9000
 pytest
+
+pytest --host 192.168.1.50 --port 9000 suite_10_functional
 ```
 
 ## Suites (order)
@@ -54,7 +58,7 @@ Optional convenience: if either `REQ2VERI_RESET_DB_USER` + `REQ2VERI_RESET_DB_PA
 ## Run
 
 ```bash
-# Default target: http://127.0.0.1:8000 (override with REQ2VERI_BASE_URL or HOST/PORT — see above)
+# Default target: http://127.0.0.1:8000 (override with REQ2VERI_BASE_URL, env HOST/PORT, or pytest --host/--port — see above)
 pytest
 # Skip the heavy load test (~15k HTTP requests by default):
 pytest -m "not load"

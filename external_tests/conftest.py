@@ -9,6 +9,23 @@ from support import env, http as http_support
 _SUITE_ORDER = ("suite_00_empty", "suite_10_functional", "suite_99_load")
 
 
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--host",
+        action="store",
+        default=None,
+        metavar="HOST",
+        help="API host when REQ2VERI_BASE_URL is unset (overrides REQ2VERI_API_HOST). Default: 127.0.0.1",
+    )
+    parser.addoption(
+        "--port",
+        action="store",
+        default=None,
+        metavar="PORT",
+        help="API port when REQ2VERI_BASE_URL is unset (overrides REQ2VERI_API_PORT). Default: 8000",
+    )
+
+
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     """Run suites in order: empty-system checks → functional groups → bulk load."""
 
@@ -23,9 +40,13 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 
 
 @pytest.fixture(scope="session")
-def base_url() -> str:
-    """Target API — set REQ2VERI_BASE_URL or REQ2VERI_API_HOST / REQ2VERI_API_PORT in the environment."""
-    return env.resolve_api_root(environ=os.environ)
+def base_url(request: pytest.FixtureRequest) -> str:
+    """Target API — REQ2VERI_BASE_URL, or host/port from env and optional ``--host`` / ``--port``."""
+    return env.resolve_api_root(
+        environ=os.environ,
+        cli_host=request.config.getoption("host"),
+        cli_port=request.config.getoption("port"),
+    )
 
 
 @pytest.fixture(scope="session")

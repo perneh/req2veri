@@ -1,0 +1,4 @@
+pytest>=8.0
+pytest-playwright>=0.5.2
+# Browser driver (imported by conftest); pytest-playwright expects `playwright install …` after pip
+playwright>=1.49.0

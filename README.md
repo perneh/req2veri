@@ -34,7 +34,9 @@ cd backend && PYTHONPATH=. pytest tests/
 cd frontend && npm test
 ```
 
-**External (black-box) API checks** from the host: [external_tests/README.md](external_tests/README.md) — ordered suites (empty DB → per-endpoint groups → optional `@load` bulk tree), `venv`, `httpx`, `pytest`. Point tests at another API with **`REQ2VERI_BASE_URL`** or **`REQ2VERI_API_HOST`** / **`REQ2VERI_API_PORT`** (no pytest URL flags).
+**External (black-box) API checks** from the host: [external_tests/README.md](external_tests/README.md) — ordered suites (empty DB → per-endpoint groups → optional `@load` bulk tree), `venv`, `httpx`, `pytest`. Target another API with **`REQ2VERI_BASE_URL`** or **`pytest --host`** / **`pytest --port`** (and env fallbacks documented there).
+
+**External browser checks** against a running UI: [external_frontend_tests/README.md](external_frontend_tests/README.md) — **pytest** + **pytest-playwright** (Python). Same **``--host`` / ``--port``** idea for the SPA (defaults `127.0.0.1:5173`), or set **`REQ2VERI_FRONTEND_BASE_URL`** for a full origin.
 
 For local Postgres + `uvicorn` / `npm run dev`, see the backend and frontend READMEs above.
 
