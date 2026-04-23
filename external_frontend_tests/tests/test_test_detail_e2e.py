@@ -1,19 +1,15 @@
-"""Verification test detail page (requires ≥1 test in the API)."""
+"""Verification test detail — list → first row → detail asserts."""
 
 from __future__ import annotations
 
-import re
+from playwright.sync_api import Page
 
-from playwright.sync_api import Page, expect
+from support.flows import verification_tests as vt_flow
+from support.target import assert_origin_is_http
 
 
-def test_first_listed_test_opens_detail_with_back_link(logged_in_page: Page) -> None:
-    logged_in_page.goto("/tests")
-    expect(logged_in_page.get_by_role("heading", name="Verification tests")).to_be_visible()
-    table = logged_in_page.get_by_role("table")
-    table.wait_for(state="visible", timeout=30_000)
-    first_key_link = table.locator("tbody a").first
-    expect(first_key_link).to_be_visible(timeout=30_000)
-    first_key_link.click()
-    expect(logged_in_page).to_have_url(re.compile(r".*/tests/\d+"))
-    expect(logged_in_page.get_by_role("link", name="Back to tests")).to_be_visible()
+def test_first_listed_test_opens_detail_with_back_link(logged_in_page: Page, frontend_target: str) -> None:
+    assert_origin_is_http(frontend_target)
+    assert logged_in_page.url.startswith(frontend_target), logged_in_page.url
+    vt_flow.open_first_test_from_list(logged_in_page)
+    vt_flow.assert_test_detail_page(logged_in_page)
