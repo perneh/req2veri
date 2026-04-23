@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: req2veri-backend-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "req2veri.labels" . | nindent 4 }}
+data:
+  CORS_ORIGINS: "https://{{ .Values.ingress.host }},http://localhost:5173"

@@ -1,0 +1,38 @@
+from datetime import datetime
+from typing import TYPE_CHECKING
+
+from sqlalchemy import Column, Enum as SAEnum
+from sqlmodel import Field, Relationship, SQLModel
+
+from app.models.enums import Priority, RequirementStatus
+
+if TYPE_CHECKING:
+    from app.models.requirement import Requirement
+    from app.models.verification_test import VerificationTest
+
+
+class SubRequirement(SQLModel, table=True):
+    __tablename__ = "sub_requirements"
+
+    id: int | None = Field(default=None, primary_key=True)
+    key: str = Field(index=True, unique=True, max_length=48)
+    parent_requirement_id: int = Field(foreign_key="requirements.id", index=True)
+    title: str = Field(max_length=512)
+    description: str = Field(default="", max_length=8192)
+    status: RequirementStatus = Field(
+        default=RequirementStatus.draft,
+        sa_column=Column(SAEnum(RequirementStatus, native_enum=False)),
+    )
+    priority: Priority = Field(
+        default=Priority.medium,
+        sa_column=Column(SAEnum(Priority, native_enum=False)),
+    )
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_by: str = Field(default="", max_length=64)
+
+    parent_requirement: "Requirement" = Relationship(back_populates="sub_requirements")
+    verification_tests: list["VerificationTest"] = Relationship(
+        back_populates="sub_requirement",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )

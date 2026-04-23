@@ -134,6 +134,9 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
+# Local test databases
+test_req2veri.db
+
 # Environments
 .env
 .envrc
@@ -205,3 +208,6 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Local prompts (not tracked)
+prompts_dir/

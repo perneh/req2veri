@@ -1,0 +1,4 @@
+# Install into a venv on the host that reaches the cluster, e.g.:
+#   cd external_tests && python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
+httpx>=0.27.0,<1
+pytest>=8.0.0,<9

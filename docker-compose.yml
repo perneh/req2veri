@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: req2veri
+      POSTGRES_PASSWORD: req2veri
+      POSTGRES_DB: req2veri
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U req2veri -d req2veri"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg2://req2veri:req2veri@db:5432/req2veri
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      JWT_SECRET_KEY: change-me-in-dev
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    # Vite runs inside this container; reach the API via the host-mapped port so we
+    # avoid relying on in-network DNS for the service name "backend" (ENOTFOUND on some setups).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      VITE_API_BASE: /api
+      VITE_API_PROXY_TARGET: http://host.docker.internal:8000
+    depends_on:
+      backend:
+        condition: service_started
+
+volumes:
+  pgdata:

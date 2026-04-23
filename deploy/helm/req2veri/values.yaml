@@ -1,0 +1,41 @@
+ingress:
+  enabled: true
+  className: nginx
+  host: req2veri.example.com
+
+backend:
+  image: req2veri-backend:latest
+  replicas: 1
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+
+frontend:
+  image: req2veri-frontend:latest
+  replicas: 1
+  resources:
+    limits:
+      cpu: "250m"
+      memory: "256Mi"
+    requests:
+      cpu: "50m"
+      memory: "128Mi"
+
+postgres:
+  image: postgres:16-alpine
+  storage: 5Gi
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+
+secrets:
+  jwtSecret: "change-me-generate-with-openssl"
+  postgresPassword: "change-me"
