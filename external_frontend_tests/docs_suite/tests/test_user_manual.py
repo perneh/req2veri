@@ -94,8 +94,14 @@ def test_generate_user_manual(english_page: Page, frontend_target: str) -> None:
             "Requirements overview (tree)",
             intro="A **hierarchical** view of each requirement and its sub-requirements.\n",
         )
-        nav_flow.click_nav_overview(page)
+        with page.expect_response(
+            lambda r: r.status == 200 and "requirements/hierarchy" in r.url,
+            timeout=60_000,
+        ):
+            nav_flow.click_nav_overview(page)
         nav_flow.assert_overview_page(page)
+        # Page shows "Loading…" until /requirements/hierarchy returns; do not capture that state.
+        expect(page.get_by_text("Loading…", exact=True)).to_be_hidden(timeout=30_000)
         manual.step(
             page,
             title="All requirements and sub-requirements",
