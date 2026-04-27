@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import os
+import re
+from pathlib import Path
 
 import pytest
 from playwright.sync_api import Page
@@ -42,6 +44,28 @@ def _origin(config: pytest.Config) -> str:
 def pytest_configure(config: pytest.Config) -> None:
     """Keep PYTEST_BASE_URL aligned for tooling; Playwright itself uses ``browser_context_args`` below."""
     os.environ["PYTEST_BASE_URL"] = _origin(config)
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo):
+    """Always save a manual screenshot on test failure when a Playwright page fixture exists."""
+    outcome = yield
+    rep = outcome.get_result()
+    if rep.when != "call" or not rep.failed:
+        return
+    page = item.funcargs.get("page")
+    if page is None:
+        return
+    output_root = Path(str(item.config.getoption("output") or "test-results"))
+    out_dir = output_root / "manual-failure-screenshots"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", item.nodeid)
+    dest = out_dir / f"{safe}.png"
+    try:
+        page.screenshot(path=str(dest), full_page=True)
+    except Exception:
+        # Do not hide the original test failure if screenshot capture fails.
+        pass
 
 
 def pytest_sessionstart(session: pytest.Session) -> None:

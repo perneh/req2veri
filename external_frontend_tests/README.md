@@ -31,6 +31,7 @@ Run **`pytest` only after** `source .venv/bin/activate`. If you run the global `
 | Browser missing | `playwright install chromium` |
 | `ERR_CONNECTION_REFUSED` / “No HTTP server at …” | Start the UI on that host/port (`npm run dev` is usually **5173**; `npm run preview` is often **4173**). Match pytest: e.g. `pytest --port 5173` while `npm run dev` runs. If you use **`--port 4173`** but only ran **`npm run dev`**, nothing listens on 4173 — either start preview on 4173 or drop `--port` / use `--port 5173`. |
 | Skip the startup HTTP probe | `pytest --allow-offline` or `REQ2VERI_E2E_ALLOW_OFFLINE=1` (tests still fail if the browser cannot connect). |
+| Where are failure screenshots? | With the default `pytest.ini`, under **`test-results/`** after a failed test (`--screenshot only-on-failure`). |
 | pip “new release available” notice | Optional: `export PIP_DISABLE_PIP_VERSION_CHECK=1` before `pip install`. |
 
 ## Configuration
@@ -48,6 +49,32 @@ Target URL uses the same precedence pattern as [external_tests](../external_test
 | **`REQ2VERI_E2E_PASSWORD`** | Login password. Default: `demo12345`. |
 
 At startup, the resolved origin is written to **`PYTEST_BASE_URL`** for pytest-playwright.
+
+## Failure screenshots (Playwright)
+
+Default runner options (see `pytest.ini`) include:
+
+- **`--screenshot only-on-failure`** — when a test fails, Playwright saves a **PNG** (and related metadata) under the artifacts directory.
+- **`--output test-results`** — artifact root (override with `pytest --output your/dir`).
+- **`--full-page-screenshot`** — on failure, capture the **full scrollable page**, not only the viewport (requires the screenshot feature above).
+
+After a failed run, look under **`test-results/`**. In addition to pytest-playwright artifacts, we also save a guaranteed fallback screenshot in:
+
+- `test-results/manual-failure-screenshots/*.png`
+
+This directory is listed in `.gitignore`.
+
+## Intentional-failure suite (demo)
+
+The folder **`screen_fail_suites/`** contains tests that are **meant to fail** so you can confirm screenshots and other failure artifacts. They are **not** part of the default `testpaths` (`tests/` only), so a normal `pytest` run stays green (assuming the app and passing tests are OK).
+
+```bash
+cd external_frontend_tests
+source .venv/bin/activate
+pytest screen_fail_suites/
+```
+
+You should see **failed** tests and new files under `test-results/`. Do not wire this path into a “must be green” CI job.
 
 ## Run
 
@@ -70,3 +97,5 @@ pytest --host 127.0.0.1 --port 4173
 # headed debugging:
 pytest --headed --slowmo 500
 ```
+
+**Collection:** a plain `pytest` only runs tests under **`tests/`** (see `pytest.ini` `testpaths`). To run the intentional failure package, use `pytest screen_fail_suites/` (see *Intentional-failure suite* above).

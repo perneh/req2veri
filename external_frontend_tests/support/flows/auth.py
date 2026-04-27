@@ -37,3 +37,19 @@ def sign_in_as_configured_demo_user(page: Page) -> None:
 
 def assert_login_shell_visible(page: Page) -> None:
     assert page.get_by_role("button", name="Sign in").is_visible(), "sign-in button should be visible on login"
+
+
+def switch_to_register_tab(page: Page) -> None:
+    page.get_by_role("tab", name="Create account").click()
+
+
+def register_new_user_and_land_on_dashboard(page: Page, *, username: str, email: str, password: str) -> None:
+    """Use the Register tab: POST /auth/register then token login (same as the UI)."""
+    open_login(page)
+    switch_to_register_tab(page)
+    page.get_by_label("Username").fill(username)
+    page.get_by_label("Email").fill(email)
+    page.get_by_label("Password").fill(password)
+    page.get_by_role("button", name="Create account").click()
+    page.wait_for_url("**/dashboard", timeout=30_000)
+    assert_url_matches_regex(page, r".*/dashboard")
