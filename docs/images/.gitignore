@@ -1,0 +1,6 @@
+# Ignore all files in this directory except the ones we version for documentation.
+# (Top-level only: add !**/*.png and adjust if you add subfolders with PNGs.)
+*
+!.gitignore
+!README.md
+!*.png

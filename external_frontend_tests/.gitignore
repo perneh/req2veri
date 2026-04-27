@@ -5,3 +5,10 @@ playwright-report/
 test-results/
 blob-report/
 .playwright/
+# User-manual Playwright output: version generated chapters + index + PNGs; ignore anything else in output/
+docs_suite/output/**
+!docs_suite/output/index.md
+!docs_suite/output/*.md
+!docs_suite/output/images/
+docs_suite/output/images/**
+!docs_suite/output/images/**/*.png

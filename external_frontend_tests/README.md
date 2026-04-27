@@ -99,3 +99,15 @@ pytest --headed --slowmo 500
 ```
 
 **Collection:** a plain `pytest` only runs tests under **`tests/`** (see `pytest.ini` `testpaths`). To run the intentional failure package, use `pytest screen_fail_suites/` (see *Intentional-failure suite* above).
+
+## Screenshot user manual (documentation)
+
+The **`docs_suite/`** package runs Playwright, captures full-page images, and writes Markdown chapters plus `output/index.md` (why + how for each main screen). **Not** in default `testpaths` — run explicitly when you want to refresh the manual:
+
+```bash
+cd external_frontend_tests
+source .venv/bin/activate
+pytest docs_suite/tests/ -v --port 5173
+```
+
+See [docs_suite/README.md](docs_suite/README.md) for `REQ2VERI_MANUAL_OUTPUT` and details.
