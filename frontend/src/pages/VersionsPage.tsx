@@ -1,4 +1,4 @@
-import { Box, Paper, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
+import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
@@ -26,22 +26,24 @@ export function VersionsPage() {
       </Typography>
       {vq.isLoading && <Typography>{t("common.loading")}</Typography>}
       {vq.data && (
-        <Table component={Paper} size="small" sx={{ mb: 3 }}>
-          <TableHead>
-            <TableRow>
-              <TableCell>{t("versions.key")}</TableCell>
-              <TableCell>{t("versions.name")}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {vq.data.map((v) => (
-              <TableRow key={v.id}>
-                <TableCell>{v.key}</TableCell>
-                <TableCell>{v.name}</TableCell>
+        <TableContainer component={Paper} sx={{ mb: 3 }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>{t("versions.key")}</TableCell>
+                <TableCell>{t("versions.name")}</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {vq.data.map((v) => (
+                <TableRow key={v.id}>
+                  <TableCell>{v.key}</TableCell>
+                  <TableCell>{v.name}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
       {firstId && (
         <>
@@ -50,26 +52,28 @@ export function VersionsPage() {
           </Typography>
           {rq.isLoading && <Typography>{t("common.loading")}</Typography>}
           {rq.data && (
-            <Table component={Paper} size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Test id</TableCell>
-                  <TableCell>{t("tests.status")}</TableCell>
-                  <TableCell>{t("requirements.reqTitle")}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rq.data.map((run) => (
-                  <TableRow key={run.id}>
-                    <TableCell>{run.verification_test_id}</TableCell>
-                    <TableCell>
-                      <StatusChip value={run.status} kind="test" />
-                    </TableCell>
-                    <TableCell>{run.actual_result || "—"}</TableCell>
+            <TableContainer component={Paper}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Test id</TableCell>
+                    <TableCell>{t("tests.status")}</TableCell>
+                    <TableCell>{t("testReport.information")}</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHead>
+                <TableBody>
+                  {rq.data.map((run) => (
+                    <TableRow key={run.id}>
+                      <TableCell>{run.verification_test_id}</TableCell>
+                      <TableCell>
+                        <StatusChip value={run.status} kind="test" />
+                      </TableCell>
+                      <TableCell>{run.information || "—"}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
         </>
       )}

@@ -106,6 +106,8 @@ class HistoryService:
         req.description = data.description
         req.status = data.status
         req.priority = data.priority
+        req.approved_by = data.approved_by
+        req.approved_at = data.approved_at
         req.updated_at = datetime.utcnow()
         req.updated_by = actor
         return self.reqs.update(req)
@@ -169,6 +171,8 @@ class HistoryService:
         sub.description = data.description
         sub.status = data.status
         sub.priority = data.priority
+        sub.approved_by = data.approved_by
+        sub.approved_at = data.approved_at
         sub.updated_at = datetime.utcnow()
         sub.updated_by = actor
         return self.subs.update(sub)

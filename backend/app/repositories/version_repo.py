@@ -38,3 +38,16 @@ class VersionRepository:
         self.session.commit()
         self.session.refresh(run)
         return run
+
+    def get_run_for_version_and_test(self, version_id: int, test_id: int) -> TestRun | None:
+        stmt = select(TestRun).where(
+            TestRun.test_object_version_id == version_id,
+            TestRun.verification_test_id == test_id,
+        )
+        return self.session.exec(stmt).first()
+
+    def update_run(self, run: TestRun) -> TestRun:
+        self.session.add(run)
+        self.session.commit()
+        self.session.refresh(run)
+        return run

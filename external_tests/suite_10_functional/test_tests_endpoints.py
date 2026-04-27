@@ -6,7 +6,7 @@ from support import http, predicates
 def _standalone_test_body(key: str) -> dict:
     return {
         "key": key[:32],
-        "title": "Standalone VT",
+        "title": f"Standalone VT {key[:10]}",
         "description": "",
         "precondition": "",
         "action": "",
@@ -44,7 +44,7 @@ def test_post_requirement_linked_test(http_client, functional_headers) -> None:
     tk = f"L{uuid.uuid4().hex}"[:32]
     body = {
         "key": tk,
-        "title": "Linked VT",
+        "title": f"Linked VT {u}",
         "description": "",
         "precondition": "",
         "action": "",
@@ -110,7 +110,7 @@ def test_patch_links_standalone_test_to_sub_requirement(http_client, functional_
         "/requirements",
         {
             "key": f"TLS{u}"[:32],
-            "title": "Parent for sub link",
+            "title": f"Parent for sub link {u}",
             "description": "",
             "status": "draft",
             "priority": "low",
@@ -124,7 +124,7 @@ def test_patch_links_standalone_test_to_sub_requirement(http_client, functional_
         f"/requirements/{rid}/subrequirements",
         {
             "key": f"SUBTLS{u}"[:48],
-            "title": "Sub for link",
+            "title": f"Sub for link {u}",
             "description": "",
             "status": "draft",
             "priority": "low",

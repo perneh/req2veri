@@ -30,6 +30,8 @@ class SubRequirement(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     updated_by: str = Field(default="", max_length=64)
+    approved_by: str = Field(default="", max_length=64)
+    approved_at: datetime | None = Field(default=None)
 
     parent_requirement: "Requirement" = Relationship(back_populates="sub_requirements")
     verification_tests: list["VerificationTest"] = Relationship(

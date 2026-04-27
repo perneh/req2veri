@@ -121,10 +121,10 @@ pytest suite_10_functional -x -v
 | `REQ2VERI_LOAD_SUBS_PER_REQ` | `10` |
 | `REQ2VERI_LOAD_TESTS_PER_SUB` | `2` |
 | `REQ2VERI_LOAD_TREND_VERSIONS` | `4` (test-object versions in `test_version_run_trends`) |
-| `REQ2VERI_LOAD_TREND_TESTS` | `3` (verification tests, each with one run per version) |
+| `REQ2VERI_LOAD_TREND_TESTS` | `100` (verification tests, each with one run per version; minimum expected by trend load test) |
 
 Example smoke with smaller tree: `REQ2VERI_LOAD_REQS=2 REQ2VERI_LOAD_SUBS_PER_REQ=3 pytest -m load`.
 
-Smaller version-trend only: `REQ2VERI_LOAD_TREND_VERSIONS=2 REQ2VERI_LOAD_TREND_TESTS=2 pytest suite_99_load/test_version_run_trends.py -m load`.
+Smaller version-trend only (must still be >=100 tests): `REQ2VERI_LOAD_TREND_VERSIONS=2 REQ2VERI_LOAD_TREND_TESTS=100 pytest suite_99_load/test_version_run_trends.py -m load`.
 
 Helpers live under `support/`; tests stay thin.

@@ -27,6 +27,12 @@ def test_nav_bar_overview(logged_in_page: Page, frontend_target: str) -> None:
     nav_flow.assert_overview_page(logged_in_page)
 
 
+def test_nav_bar_relations(logged_in_page: Page, frontend_target: str) -> None:
+    assert_origin_is_http(frontend_target)
+    nav_flow.click_nav_relations(logged_in_page)
+    nav_flow.assert_relations_page(logged_in_page)
+
+
 def test_nav_bar_tests(logged_in_page: Page, frontend_target: str) -> None:
     assert_origin_is_http(frontend_target)
     nav_flow.click_nav_tests(logged_in_page)
@@ -37,6 +43,30 @@ def test_nav_bar_versions(logged_in_page: Page, frontend_target: str) -> None:
     assert_origin_is_http(frontend_target)
     nav_flow.click_nav_versions(logged_in_page)
     nav_flow.assert_versions_page(logged_in_page)
+
+
+def test_nav_bar_system_add(logged_in_page: Page, frontend_target: str) -> None:
+    assert_origin_is_http(frontend_target)
+    nav_flow.click_nav_system_add(logged_in_page)
+    nav_flow.assert_system_add_page(logged_in_page)
+
+
+def test_nav_bar_system_expand(logged_in_page: Page, frontend_target: str) -> None:
+    assert_origin_is_http(frontend_target)
+    nav_flow.click_nav_system_expand(logged_in_page)
+    nav_flow.assert_system_expand_page(logged_in_page)
+
+
+def test_nav_bar_test_report_search(logged_in_page: Page, frontend_target: str) -> None:
+    assert_origin_is_http(frontend_target)
+    nav_flow.click_nav_test_report_search(logged_in_page)
+    nav_flow.assert_test_report_search_page(logged_in_page)
+
+
+def test_nav_bar_test_report_trends(logged_in_page: Page, frontend_target: str) -> None:
+    assert_origin_is_http(frontend_target)
+    nav_flow.click_nav_test_report_trends(logged_in_page)
+    nav_flow.assert_test_report_trends_page(logged_in_page)
 
 
 def test_nav_bar_brand_when_authed_goes_to_dashboard(logged_in_page: Page, frontend_target: str) -> None:

@@ -11,7 +11,6 @@ export function TestsNewPage() {
   const { t } = useTranslation();
   const nav = useNavigate();
   const qc = useQueryClient();
-  const [key, setKey] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [precondition, setPrecondition] = useState("");
@@ -25,7 +24,6 @@ export function TestsNewPage() {
       apiFetch<VerificationTest>("/tests", {
         method: "POST",
         json: {
-          key,
           title,
           description,
           precondition,
@@ -61,7 +59,6 @@ export function TestsNewPage() {
       )}
       <Paper sx={{ p: 2 }}>
         <Stack spacing={2}>
-          <TextField label={t("requirements.key")} value={key} onChange={(e) => setKey(e.target.value)} required size="small" />
           <TextField label={t("requirements.reqTitle")} value={title} onChange={(e) => setTitle(e.target.value)} required size="small" />
           <TextField
             label={t("requirements.description")}
@@ -102,7 +99,7 @@ export function TestsNewPage() {
             minRows={2}
             size="small"
           />
-          <Button variant="contained" disabled={m.isPending || !key.trim() || !title.trim()} onClick={() => m.mutate()}>
+          <Button variant="contained" disabled={m.isPending || !title.trim()} onClick={() => m.mutate()}>
             {t("common.create")}
           </Button>
         </Stack>

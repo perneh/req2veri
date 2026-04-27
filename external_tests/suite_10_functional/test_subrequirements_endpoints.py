@@ -54,6 +54,22 @@ def test_subrequirements_create_list_get(http_client, functional_headers) -> Non
     assert predicates.is_status(one, 200)
     assert predicates.json_body(one)["id"] == sid
 
+    me = http.get(http_client, "/users/me", headers=functional_headers)
+    assert predicates.is_status(me, 200)
+    username = predicates.json_body(me)["username"]
+
+    approved = http.patch_json(
+        http_client,
+        f"/subrequirements/{sid}",
+        {"status": "approved"},
+        headers=functional_headers,
+    )
+    assert predicates.is_status(approved, 200)
+    sub_body = predicates.json_body(approved)
+    assert sub_body["status"] == "approved"
+    assert sub_body["approved_by"] == username
+    assert sub_body["approved_at"] is not None
+
 
 # Expected failure
 

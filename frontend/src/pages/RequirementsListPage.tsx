@@ -6,6 +6,7 @@ import {
   Paper,
   Table,
   TableBody,
+  TableContainer,
   TableCell,
   TableHead,
   TableRow,
@@ -76,49 +77,57 @@ export function RequirementsListPage() {
       {query.isLoading && <Typography>{t("common.loading")}</Typography>}
       {query.isError && <Typography color="error">{query.error instanceof Error ? query.error.message : t("common.error")}</Typography>}
       {query.data && (
-        <Table component={Paper} size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>{t("requirements.key")}</TableCell>
-              <TableCell>{t("requirements.reqTitle")}</TableCell>
-              <TableCell>{t("requirements.status")}</TableCell>
-              <TableCell>{t("requirements.priority")}</TableCell>
-              <TableCell>{t("common.updatedAt")}</TableCell>
-              <TableCell>{t("common.updatedBy")}</TableCell>
-              <TableCell>{t("requirements.actions")}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {query.data.map((r) => (
-              <TableRow key={r.id} hover>
-                <TableCell>
-                  <MuiLink component={Link} to={`/requirements/${r.id}`} underline="hover" color="primary">
-                    {r.key}
-                  </MuiLink>
-                </TableCell>
-                <TableCell>
-                  <MuiLink component={Link} to={`/requirements/${r.id}`} underline="hover" color="inherit">
-                    {r.title}
-                  </MuiLink>
-                </TableCell>
-                <TableCell>
-                  <StatusChip value={r.status} />
-                </TableCell>
-                <TableCell>{t(`priority.${r.priority}` as never)}</TableCell>
-                <TableCell>{new Date(r.updated_at).toLocaleString()}</TableCell>
-                <TableCell>{r.updated_by || "—"}</TableCell>
-                <TableCell sx={{ whiteSpace: "nowrap" }}>
-                  <Button component={Link} to={`/requirements/${r.id}`} size="small">
-                    {t("requirements.view")}
-                  </Button>{" "}
-                  <Button component={Link} to={`/requirements/${r.id}#sub`} size="small" variant="outlined">
-                    {t("requirements.openDetailForSubs")}
-                  </Button>
-                </TableCell>
+        <TableContainer component={Paper}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>{t("requirements.key")}</TableCell>
+                <TableCell>{t("requirements.reqTitle")}</TableCell>
+                <TableCell>{t("requirements.status")}</TableCell>
+                <TableCell>{t("requirements.priority")}</TableCell>
+                <TableCell>{t("requirements.approvedBy")}</TableCell>
+                <TableCell>{t("requirements.approvedAt")}</TableCell>
+                <TableCell>{t("common.updatedAt")}</TableCell>
+                <TableCell>{t("common.updatedBy")}</TableCell>
+                <TableCell>{t("requirements.actions")}</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {query.data.map((r) => (
+                <TableRow key={r.id} hover>
+                  <TableCell>
+                    <MuiLink component={Link} to={`/requirements/${r.id}`} underline="hover" color="primary">
+                      {r.key}
+                    </MuiLink>
+                  </TableCell>
+                  <TableCell>
+                    <MuiLink component={Link} to={`/requirements/${r.id}`} underline="hover" color="inherit">
+                      {r.title}
+                    </MuiLink>
+                  </TableCell>
+                  <TableCell>
+                    <StatusChip value={r.status} />
+                  </TableCell>
+                  <TableCell>{t(`priority.${r.priority}` as never)}</TableCell>
+                  <TableCell>{r.status === "approved" ? r.approved_by || "—" : "—"}</TableCell>
+                  <TableCell>
+                    {r.status === "approved" && r.approved_at ? new Date(r.approved_at).toLocaleString() : "—"}
+                  </TableCell>
+                  <TableCell>{new Date(r.updated_at).toLocaleString()}</TableCell>
+                  <TableCell>{r.updated_by || "—"}</TableCell>
+                  <TableCell sx={{ whiteSpace: "nowrap" }}>
+                    <Button component={Link} to={`/requirements/${r.id}`} size="small">
+                      {t("requirements.view")}
+                    </Button>{" "}
+                    <Button component={Link} to={`/requirements/${r.id}#sub`} size="small" variant="outlined">
+                      {t("requirements.openDetailForSubs")}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
     </Box>
   );

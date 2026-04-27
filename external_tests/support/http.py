@@ -44,3 +44,13 @@ def patch_json(
     headers: Mapping[str, str] | None = None,
 ) -> httpx.Response:
     return client.patch(path, json=body, headers=None if headers is None else dict(headers))
+
+
+def put_json(
+    client: httpx.Client,
+    path: str,
+    body: object,
+    *,
+    headers: Mapping[str, str] | None = None,
+) -> httpx.Response:
+    return client.put(path, json=body, headers=None if headers is None else dict(headers))

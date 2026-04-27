@@ -6,6 +6,7 @@ from sqlmodel import Session, select
 from app.models import SubRequirement
 from app.repositories.sub_requirement_repo import SubRequirementRepository
 from app.schemas.sub_requirement import SubRequirementCreate, SubRequirementUpdate
+from app.services.approval_metadata import init_approved_fields_on_create, sync_approved_fields_after_status_change
 from app.services.history_service import HistoryService
 from app.services.requirement_service import RequirementService
 
@@ -46,6 +47,7 @@ class SubRequirementService:
             parent_requirement_id=requirement_id,
         )
         obj.updated_by = actor
+        init_approved_fields_on_create(obj, status=obj.status, actor=actor)
         created = self.repo.create(obj)
         HistoryService(self.session).record_sub_requirement_snapshot(created, actor=actor)
         return created
@@ -54,6 +56,7 @@ class SubRequirementService:
         s = self.get(sub_id)
         HistoryService(self.session).record_sub_requirement_snapshot(s, actor=actor)
         payload = data.model_dump(exclude_unset=True)
+        old_status = s.status
         if "key" in payload and payload["key"] != s.key:
             if self.session.exec(
                 select(SubRequirement).where(SubRequirement.key == payload["key"])
@@ -65,6 +68,8 @@ class SubRequirementService:
             setattr(s, k, v)
         s.updated_at = datetime.utcnow()
         s.updated_by = actor
+        if "status" in payload:
+            sync_approved_fields_after_status_change(s, old_status=old_status, new_status=s.status, actor=actor)
         return self.repo.update(s)
 
     def delete(self, sub_id: int) -> None:

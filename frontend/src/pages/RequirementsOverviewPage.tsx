@@ -52,7 +52,7 @@ export function RequirementsOverviewPage() {
               <Box component="ul" sx={{ m: 0, pl: 2 }}>
                 {row.sub_requirements.map((s) => (
                   <li key={s.id}>
-                    <Typography variant="body2">
+                    <Typography variant="body2" component="div">
                       <strong>{s.key}</strong> — {s.title} <StatusChip value={s.status} />
                     </Typography>
                   </li>

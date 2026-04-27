@@ -27,7 +27,7 @@ def test_bulk_requirements_subs_and_tests(http_client) -> None:
         key = f"T{run}{n:05d}"[:32]
         return {
             "key": key,
-            "title": "Load VT",
+            "title": f"Load VT {run}-{n}",
             "description": "",
             "precondition": "",
             "action": "",

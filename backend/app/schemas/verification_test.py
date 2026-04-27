@@ -6,7 +6,7 @@ from app.models.enums import TestMethod, TestStatus
 
 
 class VerificationTestBase(BaseModel):
-    key: str = Field(max_length=32)
+    key: str | None = Field(default=None, max_length=32)
     title: str
     description: str = ""
     precondition: str = ""

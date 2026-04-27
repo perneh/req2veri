@@ -11,6 +11,7 @@ from app.repositories.requirement_repo import RequirementRepository
 from app.repositories.sub_requirement_repo import SubRequirementRepository
 from app.schemas.requirement import RequirementCoverage, RequirementCreate, RequirementHierarchyItem, RequirementRead, RequirementUpdate
 from app.schemas.sub_requirement import SubRequirementRead
+from app.services.approval_metadata import init_approved_fields_on_create, sync_approved_fields_after_status_change
 from app.services.history_service import HistoryService
 
 
@@ -56,6 +57,7 @@ class RequirementService:
             )
         obj = Requirement.model_validate(data)
         obj.updated_by = actor
+        init_approved_fields_on_create(obj, status=obj.status, actor=actor)
         created = self.reqs.create(obj)
         HistoryService(self.session).record_requirement_snapshot(created, actor=actor)
         return created
@@ -64,6 +66,7 @@ class RequirementService:
         r = self.get(req_id)
         HistoryService(self.session).record_requirement_snapshot(r, actor=actor)
         payload = data.model_dump(exclude_unset=True)
+        old_status = r.status
         if "key" in payload and payload["key"] != r.key:
             if self.reqs.get_by_key(payload["key"]):
                 raise HTTPException(
@@ -73,6 +76,8 @@ class RequirementService:
             setattr(r, k, v)
         r.updated_at = datetime.utcnow()
         r.updated_by = actor
+        if "status" in payload:
+            sync_approved_fields_after_status_change(r, old_status=old_status, new_status=r.status, actor=actor)
         return self.reqs.update(r)
 
     def delete(self, req_id: int) -> None:

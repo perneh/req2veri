@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from fastapi import HTTPException, status
-from sqlmodel import Session
+from sqlmodel import Session, func, select
 
 from app.models import SubRequirement, VerificationTest
 from app.repositories.sub_requirement_repo import SubRequirementRepository
@@ -68,11 +68,67 @@ class VerificationTestService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Test not found")
         return t
 
+    def _next_available_key(self, base: str, *, current_id: int | None = None) -> str:
+        base = base[:32]
+        candidate = base
+        i = 2
+        while True:
+            existing = self.repo.get_by_key(candidate)
+            if existing is None or existing.id == current_id:
+                return candidate
+            suffix = f"-{i}"
+            candidate = f"{base[: max(1, 32 - len(suffix))]}{suffix}"
+            i += 1
+
+    def _derive_link_based_key(
+        self,
+        *,
+        requirement_id: int | None,
+        sub_requirement_id: int | None,
+        current_id: int | None = None,
+    ) -> str:
+        if sub_requirement_id is not None:
+            sub = self.session.get(SubRequirement, sub_requirement_id)
+            if sub is not None:
+                base = sub.key
+                if base.upper().startswith("REQ-"):
+                    base = "VER-" + base[4:]
+                else:
+                    base = "VER-" + base
+                return self._next_available_key(base, current_id=current_id)
+        if requirement_id is not None:
+            req = self.req_service.get(requirement_id)
+            base = req.key
+            if base.upper().startswith("REQ-"):
+                base = "VER-" + base[4:]
+            else:
+                base = "VER-" + base
+            return self._next_available_key(base, current_id=current_id)
+
+        existing_count = int(
+            self.session.exec(
+                select(func.count())
+                .select_from(VerificationTest)
+                .where(
+                    VerificationTest.requirement_id.is_(None),
+                    VerificationTest.sub_requirement_id.is_(None),
+                )
+            ).one()
+        )
+        return self._next_available_key(f"NOT-LINKED-{existing_count + 1:03d}", current_id=current_id)
+
     def create(self, data: VerificationTestCreate, *, actor: str) -> VerificationTest:
         _validate_parent_state(self.session, data.requirement_id, data.sub_requirement_id)
-        if self.repo.get_by_key(data.key):
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Test key already exists")
+        if self.repo.get_by_title(data.title):
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Test title already exists")
         obj = VerificationTest.model_validate(data)
+        if obj.key:
+            if self.repo.get_by_key(obj.key):
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Test key already exists")
+        else:
+            obj.key = self._derive_link_based_key(
+                requirement_id=obj.requirement_id, sub_requirement_id=obj.sub_requirement_id
+            )
         obj.updated_by = actor
         created = self.repo.create(obj)
         HistoryService(self.session).record_verification_test_snapshot(created, actor=actor)
@@ -83,6 +139,7 @@ class VerificationTestService:
         HistoryService(self.session).record_verification_test_snapshot(t, actor=actor)
         payload = data.model_dump(exclude_unset=True)
         old_key = t.key
+        old_title = t.title
         if "requirement_id" in payload and payload["requirement_id"] is not None:
             t.sub_requirement_id = None
         if "sub_requirement_id" in payload and payload["sub_requirement_id"] is not None:
@@ -95,6 +152,19 @@ class VerificationTestService:
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT, detail="Test key already exists"
                 )
+        if "title" in payload and payload["title"] != old_title:
+            if self.repo.get_by_title(payload["title"]):
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT, detail="Test title already exists"
+                )
+        if "key" not in payload and (
+            ("requirement_id" in payload) or ("sub_requirement_id" in payload)
+        ):
+            t.key = self._derive_link_based_key(
+                requirement_id=t.requirement_id,
+                sub_requirement_id=t.sub_requirement_id,
+                current_id=t.id,
+            )
         t.updated_at = datetime.utcnow()
         t.updated_by = actor
         return self.repo.update(t)

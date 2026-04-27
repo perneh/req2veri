@@ -26,8 +26,16 @@ class TestRunCreate(BaseModel):
 
     verification_test_id: int
     status: TestStatus = TestStatus.not_run
-    expected_result: str = ""
-    actual_result: str = ""
+    information: str = ""
+    ran_at: datetime | None = None
+
+
+class TestRunUpsert(BaseModel):
+    """Upsert a run for PUT /test-object-versions/{version_id}/runs/{test_id}."""
+
+    status: TestStatus = TestStatus.not_run
+    information: str = ""
+    ran_at: datetime | None = None
 
 
 class TestRunRead(BaseModel):
@@ -35,8 +43,8 @@ class TestRunRead(BaseModel):
     verification_test_id: int
     test_object_version_id: int
     status: TestStatus
-    expected_result: str
-    actual_result: str
+    information: str
+    reported_by: str
     ran_at: datetime
 
     model_config = {"from_attributes": True}

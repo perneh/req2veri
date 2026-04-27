@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -7,7 +8,13 @@ from app.database import get_session
 from app.dependencies import CurrentUser
 from app.models import TestObjectVersion, TestRun
 from app.repositories.version_repo import VersionRepository
-from app.schemas.versioning import TestObjectVersionCreate, TestObjectVersionRead, TestRunCreate, TestRunRead
+from app.schemas.versioning import (
+    TestObjectVersionCreate,
+    TestObjectVersionRead,
+    TestRunCreate,
+    TestRunRead,
+    TestRunUpsert,
+)
 
 router = APIRouter(prefix="/test-object-versions", tags=["test-object-versions"])
 
@@ -44,7 +51,7 @@ def list_runs(
 
 @router.post("/{version_id}/runs", response_model=TestRunRead, status_code=201)
 def create_run(
-    _: CurrentUser,
+    user: CurrentUser,
     session: Annotated[Session, Depends(get_session)],
     version_id: int,
     data: TestRunCreate,
@@ -59,7 +66,41 @@ def create_run(
         verification_test_id=data.verification_test_id,
         test_object_version_id=version_id,
         status=data.status,
-        expected_result=data.expected_result,
-        actual_result=data.actual_result,
+        information=data.information,
+        reported_by=user.username,
+        ran_at=data.ran_at or datetime.utcnow(),
+    )
+    return repo.create_run(run)
+
+
+@router.put("/{version_id}/runs/{test_id}", response_model=TestRunRead, status_code=status.HTTP_200_OK)
+def upsert_run(
+    user: CurrentUser,
+    session: Annotated[Session, Depends(get_session)],
+    version_id: int,
+    test_id: int,
+    data: TestRunUpsert,
+):
+    repo = VersionRepository(session)
+    if repo.get_version(version_id) is None:
+        raise HTTPException(status_code=404, detail="Version not found")
+    from app.services.verification_test_service import VerificationTestService
+
+    VerificationTestService(session).get(test_id)
+    existing = repo.get_run_for_version_and_test(version_id, test_id)
+    if existing is not None:
+        existing.status = data.status
+        existing.information = data.information
+        existing.reported_by = user.username
+        existing.ran_at = data.ran_at or datetime.utcnow()
+        return repo.update_run(existing)
+
+    run = TestRun(
+        verification_test_id=test_id,
+        test_object_version_id=version_id,
+        status=data.status,
+        information=data.information,
+        reported_by=user.username,
+        ran_at=data.ran_at or datetime.utcnow(),
     )
     return repo.create_run(run)

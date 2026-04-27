@@ -18,6 +18,12 @@ export function TestDetailPage() {
   const [selectedRequirementId, setSelectedRequirementId] = useState<number | "">("");
   const [selectedSubRequirementId, setSelectedSubRequirementId] = useState<number | "">("");
   const [linkMsg, setLinkMsg] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editPrecondition, setEditPrecondition] = useState("");
+  const [editAction, setEditAction] = useState("");
+  const [editExpected, setEditExpected] = useState("");
+  const [editMethod, setEditMethod] = useState<VerificationTest["method"]>("test");
 
   const q = useQuery({
     queryKey: ["test", testId],
@@ -51,7 +57,34 @@ export function TestDetailPage() {
     else setLinkMode("none");
     setSelectedRequirementId(te.requirement_id ?? "");
     setSelectedSubRequirementId(te.sub_requirement_id ?? "");
+    setEditTitle(te.title);
+    setEditDescription(te.description);
+    setEditPrecondition(te.precondition);
+    setEditAction(te.action);
+    setEditExpected(te.expected_result);
+    setEditMethod(te.method);
   }, [q.data?.requirement_id, q.data?.sub_requirement_id]);
+
+  const editMutation = useMutation({
+    mutationFn: () =>
+      apiFetch<VerificationTest>(`/tests/${testId}`, {
+        method: "PATCH",
+        json: {
+          title: editTitle,
+          description: editDescription,
+          precondition: editPrecondition,
+          action: editAction,
+          expected_result: editExpected,
+          method: editMethod,
+        },
+      }),
+    onSuccess: async () => {
+      setLinkMsg(t("tests.testUpdated"));
+      await qc.invalidateQueries({ queryKey: ["test", testId] });
+      await qc.invalidateQueries({ queryKey: ["tests"] });
+    },
+    onError: (e: Error) => setLinkMsg(e.message),
+  });
 
   const linkMutation = useMutation({
     mutationFn: async () => {
@@ -124,7 +157,7 @@ export function TestDetailPage() {
     <Box maxWidth={900}>
       <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ sm: "center" }} sx={{ mb: 2 }}>
         <Typography variant="h5">
-          {te.key} — {te.title}
+          {te.title}
         </Typography>
         <Button component={Link} to="/tests">
           {t("tests.backToList")}
@@ -133,7 +166,7 @@ export function TestDetailPage() {
 
       <Paper sx={{ p: 2 }}>
         <Stack spacing={2}>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" component="div">
             <strong>{t("tests.status")}:</strong> <StatusChip value={te.status} kind="test" />{" "}
             · <strong>{t("tests.method")}:</strong> {t(`method.${te.method}` as never)} ·{" "}
             <strong>{t("tests.linked")}:</strong> {linkedTo}
@@ -162,6 +195,63 @@ export function TestDetailPage() {
           <Box>
             <Typography variant="subtitle2">{t("tests.actual")}</Typography>
             <Typography sx={{ whiteSpace: "pre-wrap" }}>{te.actual_result || t("tests.unlinkedLabel")}</Typography>
+          </Box>
+
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              {t("tests.editTest")}
+            </Typography>
+            <Stack spacing={1.5}>
+              <TextField size="small" label={t("requirements.reqTitle")} value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+              <TextField
+                size="small"
+                label={t("requirements.description")}
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                multiline
+                minRows={2}
+              />
+              <TextField
+                size="small"
+                label={t("tests.precondition")}
+                value={editPrecondition}
+                onChange={(e) => setEditPrecondition(e.target.value)}
+                multiline
+                minRows={2}
+              />
+              <TextField
+                size="small"
+                label={t("tests.action")}
+                value={editAction}
+                onChange={(e) => setEditAction(e.target.value)}
+                multiline
+                minRows={2}
+              />
+              <TextField
+                select
+                size="small"
+                label={t("tests.method")}
+                value={editMethod}
+                onChange={(e) => setEditMethod(e.target.value as VerificationTest["method"])}
+              >
+                {(["inspection", "analysis", "test", "demonstration"] as const).map((m) => (
+                  <MenuItem key={m} value={m}>
+                    {t(`method.${m}` as never)}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                size="small"
+                label={t("tests.expected")}
+                value={editExpected}
+                onChange={(e) => setEditExpected(e.target.value)}
+                multiline
+                minRows={2}
+              />
+              <Button variant="contained" onClick={() => editMutation.mutate()} disabled={editMutation.isPending || !editTitle.trim()}>
+                {t("common.save")}
+              </Button>
+            </Stack>
           </Box>
 
           <Box>

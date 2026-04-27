@@ -31,5 +31,7 @@ class SubRequirementRead(SubRequirementBase):
     created_at: datetime
     updated_at: datetime
     updated_by: str
+    approved_by: str = ""
+    approved_at: datetime | None = None
 
     model_config = {"from_attributes": True}

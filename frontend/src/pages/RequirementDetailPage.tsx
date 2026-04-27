@@ -110,9 +110,15 @@ export function RequirementDetailPage() {
       <Typography variant="h5" gutterBottom>
         {r.key} — {r.title}
       </Typography>
-      <Typography color="text.secondary" variant="body2" gutterBottom>
+      <Typography color="text.secondary" variant="body2" component="div" gutterBottom>
         <StatusChip value={r.status} /> {t(`priority.${r.priority}` as never)}
       </Typography>
+      {r.status === "approved" && (
+        <Typography variant="caption" color="text.secondary" component="div" sx={{ mb: 1.5 }}>
+          {t("requirements.approvedBy")}: {r.approved_by || "—"} · {t("requirements.approvedAt")}:{" "}
+          {r.approved_at ? new Date(r.approved_at).toLocaleString() : "—"}
+        </Typography>
+      )}
       <Typography variant="body1" sx={{ mb: 2, whiteSpace: "pre-wrap" }}>
         {r.description}
       </Typography>
@@ -238,6 +244,8 @@ export function RequirementDetailPage() {
                 <TableCell>{t("requirements.reqTitle")}</TableCell>
                 <TableCell>{t("requirements.status")}</TableCell>
                 <TableCell>{t("requirements.priority")}</TableCell>
+                <TableCell>{t("requirements.approvedBy")}</TableCell>
+                <TableCell>{t("requirements.approvedAt")}</TableCell>
                 <TableCell>{t("common.updatedAt")}</TableCell>
                 <TableCell>{t("common.updatedBy")}</TableCell>
               </TableRow>
@@ -251,6 +259,10 @@ export function RequirementDetailPage() {
                     <StatusChip value={s.status} />
                   </TableCell>
                   <TableCell>{t(`priority.${s.priority}` as never)}</TableCell>
+                  <TableCell>{s.status === "approved" ? s.approved_by || "—" : "—"}</TableCell>
+                  <TableCell>
+                    {s.status === "approved" && s.approved_at ? new Date(s.approved_at).toLocaleString() : "—"}
+                  </TableCell>
                   <TableCell>{new Date(s.updated_at).toLocaleString()}</TableCell>
                   <TableCell>{s.updated_by || "—"}</TableCell>
                 </TableRow>

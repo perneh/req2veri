@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 import os
 import uuid
 
@@ -26,7 +27,7 @@ def test_load_records_runs_across_versions_for_per_test_and_per_version_trends(h
     n_versions = load_scale.trend_version_count(os.environ)
     n_tests = load_scale.trend_verification_test_count(os.environ)
     assert n_versions >= 2
-    assert n_tests >= 2
+    assert n_tests >= 100
 
     token = flow.register_and_token(http_client)
     headers = auth.bearer_headers(token)
@@ -50,7 +51,7 @@ def test_load_records_runs_across_versions_for_per_test_and_per_version_trends(h
         "/requirements",
         {
             "key": rk,
-            "title": "Trend anchor",
+            "title": f"Trend anchor {run}",
             "description": "",
             "status": "draft",
             "priority": "low",
@@ -66,7 +67,7 @@ def test_load_records_runs_across_versions_for_per_test_and_per_version_trends(h
         f"/requirements/{rid}/subrequirements",
         {
             "key": sk,
-            "title": "Trend sub",
+            "title": f"Trend sub {run}",
             "description": "",
             "status": "draft",
             "priority": "low",
@@ -84,7 +85,7 @@ def test_load_records_runs_across_versions_for_per_test_and_per_version_trends(h
             f"/subrequirements/{sid}/tests",
             {
                 "key": key,
-                "title": f"Trend VT {ti}",
+                    "title": f"Trend VT {run}-{ti}",
                 "description": "",
                 "precondition": "",
                 "action": "",
@@ -108,8 +109,11 @@ def test_load_records_runs_across_versions_for_per_test_and_per_version_trends(h
                 {
                     "verification_test_id": tid,
                     "status": st,
-                    "expected_result": f"exp v{vi} t{ti}",
-                    "actual_result": f"act v{vi} t{ti}",
+                    "information": f"info v{vi} t{ti}",
+                    "ran_at": (
+                        datetime(2026, 1, 1, tzinfo=timezone.utc)
+                        + timedelta(days=vi, minutes=ti)
+                    ).isoformat(),
                 },
                 headers=headers,
             )
@@ -129,7 +133,7 @@ def test_load_records_runs_across_versions_for_per_test_and_per_version_trends(h
             row = by_tid[tid]
             assert row["status"] == matrix[vi][ti]
             assert row["test_object_version_id"] == vid
-            assert f"v{vi}" in row.get("expected_result", "")
+            assert f"v{vi}" in row.get("information", "")
 
     # Per verification test: outcomes differ across versions (trend / history signal)
     for ti, tid in enumerate(test_ids):

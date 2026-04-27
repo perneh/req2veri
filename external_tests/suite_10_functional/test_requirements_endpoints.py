@@ -48,6 +48,22 @@ def test_requirements_list_get_post_patch(http_client, functional_headers) -> No
     assert predicates.is_status(patched, 200)
     assert predicates.json_body(patched)["title"] == "Updated title"
 
+    me = http.get(http_client, "/users/me", headers=functional_headers)
+    assert predicates.is_status(me, 200)
+    username = predicates.json_body(me)["username"]
+
+    approved = http.patch_json(
+        http_client,
+        f"/requirements/{rid}",
+        {"status": "approved"},
+        headers=functional_headers,
+    )
+    assert predicates.is_status(approved, 200)
+    body = predicates.json_body(approved)
+    assert body["status"] == "approved"
+    assert body["approved_by"] == username
+    assert body["approved_at"] is not None
+
 
 # Expected failure
 

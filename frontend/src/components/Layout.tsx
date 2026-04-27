@@ -6,6 +6,7 @@ import {
   Button,
   Container,
   Link as MuiLink,
+  Menu,
   MenuItem,
   Select,
   Toolbar,
@@ -14,6 +15,7 @@ import {
 import { useTheme } from "@mui/material/styles";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useState } from "react";
 
 import { useAuth } from "../context/AuthContext";
 import { useThemeMode } from "../context/ThemeModeContext";
@@ -26,11 +28,17 @@ export function Layout() {
   const nav = useNavigate();
   const { token, setAuthToken } = useAuth();
   const authed = !!token;
+  const [addEditAnchor, setAddEditAnchor] = useState<null | HTMLElement>(null);
+  const [systemAnchor, setSystemAnchor] = useState<null | HTMLElement>(null);
+  const [reportAnchor, setReportAnchor] = useState<null | HTMLElement>(null);
 
   const logout = () => {
     setAuthToken(null);
     nav("/login");
   };
+  const addEditOpen = Boolean(addEditAnchor);
+  const systemOpen = Boolean(systemAnchor);
+  const reportOpen = Boolean(reportAnchor);
 
   const glassPanel =
     theme.palette.mode === "dark" ? "rgba(22, 27, 34, 0.48)" : "rgba(255, 255, 255, 0.66)";
@@ -63,18 +71,68 @@ export function Layout() {
                 <MuiLink component={Link} to="/dashboard" underline="hover" color="inherit">
                   {t("nav.dashboard")}
                 </MuiLink>
-                <MuiLink component={Link} to="/requirements" underline="hover" color="inherit">
-                  {t("nav.requirements")}
+                <Button
+                  color="inherit"
+                  onClick={(e) => setAddEditAnchor(e.currentTarget)}
+                  aria-haspopup="true"
+                  aria-expanded={addEditOpen ? "true" : undefined}
+                >
+                  {t("nav.addEdit")}
+                </Button>
+                <Menu
+                  anchorEl={addEditAnchor}
+                  open={addEditOpen}
+                  onClose={() => setAddEditAnchor(null)}
+                  keepMounted
+                >
+                  <MenuItem component={Link} to="/requirements" onClick={() => setAddEditAnchor(null)}>
+                    {t("nav.requirements")}
+                  </MenuItem>
+                  <MenuItem component={Link} to="/requirements/overview" onClick={() => setAddEditAnchor(null)}>
+                    {t("nav.overview")}
+                  </MenuItem>
+                  <MenuItem component={Link} to="/tests" onClick={() => setAddEditAnchor(null)}>
+                    {t("nav.tests")}
+                  </MenuItem>
+                </Menu>
+                <MuiLink component={Link} to="/requirements/relations" underline="hover" color="inherit">
+                  {t("nav.relations")}
                 </MuiLink>
-                <MuiLink component={Link} to="/requirements/overview" underline="hover" color="inherit">
-                  {t("nav.overview")}
-                </MuiLink>
-                <MuiLink component={Link} to="/tests" underline="hover" color="inherit">
-                  {t("nav.tests")}
-                </MuiLink>
-                <MuiLink component={Link} to="/versions" underline="hover" color="inherit">
-                  {t("nav.versions")}
-                </MuiLink>
+                <Button
+                  color="inherit"
+                  onClick={(e) => setSystemAnchor(e.currentTarget)}
+                  aria-haspopup="true"
+                  aria-expanded={systemOpen ? "true" : undefined}
+                >
+                  {t("nav.system")}
+                </Button>
+                <Menu anchorEl={systemAnchor} open={systemOpen} onClose={() => setSystemAnchor(null)} keepMounted>
+                  <MenuItem component={Link} to="/systems/new" onClick={() => setSystemAnchor(null)}>
+                    {t("nav.systemAdd")}
+                  </MenuItem>
+                  <MenuItem component={Link} to="/systems" onClick={() => setSystemAnchor(null)}>
+                    {t("nav.systemList")}
+                  </MenuItem>
+                  <MenuItem component={Link} to="/systems/expand" onClick={() => setSystemAnchor(null)}>
+                    {t("nav.systemExpand")}
+                  </MenuItem>
+                </Menu>
+                <Button
+                  color="inherit"
+                  onClick={(e) => setReportAnchor(e.currentTarget)}
+                  aria-haspopup="true"
+                  aria-expanded={reportOpen ? "true" : undefined}
+                >
+                  {t("nav.testReport")}
+                </Button>
+                <Menu anchorEl={reportAnchor} open={reportOpen} onClose={() => setReportAnchor(null)} keepMounted>
+                  <MenuItem component={Link} to="/test-report" onClick={() => setReportAnchor(null)}>
+                    {t("nav.testReportSearch")}
+                  </MenuItem>
+                  <MenuItem component={Link} to="/test-report/trends" onClick={() => setReportAnchor(null)}>
+                    {t("nav.testReportTrends")}
+                  </MenuItem>
+                </Menu>
               </>
             )}
             <Box sx={{ flexGrow: 1 }} />

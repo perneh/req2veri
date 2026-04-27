@@ -18,6 +18,8 @@ export type Requirement = {
   created_at: string;
   updated_at: string;
   updated_by: string;
+  approved_by: string;
+  approved_at: string | null;
 };
 
 export type SubRequirement = {
@@ -31,6 +33,8 @@ export type SubRequirement = {
   created_at: string;
   updated_at: string;
   updated_by: string;
+  approved_by: string;
+  approved_at: string | null;
 };
 
 export type VerificationTest = {
@@ -85,9 +89,15 @@ export type TestRun = {
   verification_test_id: number;
   test_object_version_id: number;
   status: TestStatus;
-  expected_result: string;
-  actual_result: string;
+  information: string;
+  reported_by: string;
   ran_at: string;
+};
+
+export type TestRunUpsert = {
+  status: TestStatus;
+  information: string;
+  ran_at?: string;
 };
 
 export type RequirementHierarchyItem = {

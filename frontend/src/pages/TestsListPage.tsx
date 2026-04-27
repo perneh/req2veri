@@ -7,6 +7,7 @@ import {
   Stack,
   Table,
   TableBody,
+  TableContainer,
   TableCell,
   TableHead,
   TableRow,
@@ -69,44 +70,44 @@ export function TestsListPage() {
       {q.isLoading && <Typography>{t("common.loading")}</Typography>}
       {q.isError && <Typography color="error">{q.error instanceof Error ? q.error.message : t("common.error")}</Typography>}
       {q.data && (
-        <Table component={Paper} size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>{t("requirements.key")}</TableCell>
-              <TableCell>{t("requirements.reqTitle")}</TableCell>
-              <TableCell>{t("tests.method")}</TableCell>
-              <TableCell>{t("tests.status")}</TableCell>
-              <TableCell>{t("tests.linked")}</TableCell>
-              <TableCell>{t("common.updatedAt")}</TableCell>
-              <TableCell>{t("common.updatedBy")}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {q.data.map((te) => (
-              <TableRow key={te.id}>
-                <TableCell>
-                  <MuiLink component={Link} to={`/tests/${te.id}`} underline="hover">
-                    {te.key}
-                  </MuiLink>
-                </TableCell>
-                <TableCell>{te.title}</TableCell>
-                <TableCell>{t(`method.${te.method}` as never)}</TableCell>
-                <TableCell>
-                  <StatusChip value={te.status} kind="test" />
-                </TableCell>
-                <TableCell>
-                  {te.requirement_id != null
-                    ? `REQ #${te.requirement_id}`
-                    : te.sub_requirement_id != null
-                      ? `SUB #${te.sub_requirement_id}`
-                      : t("tests.unlinkedLabel")}
-                </TableCell>
-                <TableCell>{new Date(te.updated_at).toLocaleString()}</TableCell>
-                <TableCell>{te.updated_by || "—"}</TableCell>
+        <TableContainer component={Paper}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>{t("requirements.reqTitle")}</TableCell>
+                <TableCell>{t("tests.method")}</TableCell>
+                <TableCell>{t("tests.status")}</TableCell>
+                <TableCell>{t("tests.linked")}</TableCell>
+                <TableCell>{t("common.updatedAt")}</TableCell>
+                <TableCell>{t("common.updatedBy")}</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {q.data.map((te) => (
+                <TableRow key={te.id}>
+                  <TableCell>
+                    <MuiLink component={Link} to={`/tests/${te.id}`} underline="hover">
+                      {te.title}
+                    </MuiLink>
+                  </TableCell>
+                  <TableCell>{t(`method.${te.method}` as never)}</TableCell>
+                  <TableCell>
+                    <StatusChip value={te.status} kind="test" />
+                  </TableCell>
+                  <TableCell>
+                    {te.requirement_id != null
+                      ? `REQ #${te.requirement_id}`
+                      : te.sub_requirement_id != null
+                        ? `SUB #${te.sub_requirement_id}`
+                        : t("tests.unlinkedLabel")}
+                  </TableCell>
+                  <TableCell>{new Date(te.updated_at).toLocaleString()}</TableCell>
+                  <TableCell>{te.updated_by || "—"}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
     </Box>
   );

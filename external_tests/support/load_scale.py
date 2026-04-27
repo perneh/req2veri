@@ -22,4 +22,4 @@ def trend_version_count(environ: Mapping[str, str] | None = None) -> int:
 
 def trend_verification_test_count(environ: Mapping[str, str] | None = None) -> int:
     """How many verification tests receive one run per version in the trend load test."""
-    return int((environ or {}).get("REQ2VERI_LOAD_TREND_TESTS", "3"))
+    return int((environ or {}).get("REQ2VERI_LOAD_TREND_TESTS", "100"))

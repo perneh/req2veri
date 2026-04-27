@@ -15,11 +15,14 @@ class VerificationTestRepository:
     def get_by_key(self, key: str) -> VerificationTest | None:
         return self.session.exec(select(VerificationTest).where(VerificationTest.key == key)).first()
 
+    def get_by_title(self, title: str) -> VerificationTest | None:
+        return self.session.exec(select(VerificationTest).where(VerificationTest.title == title)).first()
+
     def list_for_requirement(self, requirement_id: int) -> list[VerificationTest]:
         stmt = (
             select(VerificationTest)
             .where(VerificationTest.requirement_id == requirement_id)
-            .order_by(VerificationTest.key)
+            .order_by(VerificationTest.title)
         )
         return list(self.session.exec(stmt).all())
 
@@ -27,7 +30,7 @@ class VerificationTestRepository:
         stmt = (
             select(VerificationTest)
             .where(VerificationTest.sub_requirement_id == sub_requirement_id)
-            .order_by(VerificationTest.key)
+            .order_by(VerificationTest.title)
         )
         return list(self.session.exec(stmt).all())
 
@@ -44,8 +47,7 @@ class VerificationTestRepository:
         if q:
             like = f"%{q}%"
             stmt = stmt.where(
-                (VerificationTest.key.ilike(like))
-                | (VerificationTest.title.ilike(like))
+                (VerificationTest.title.ilike(like))
                 | (VerificationTest.description.ilike(like))
                 | (VerificationTest.precondition.ilike(like))
                 | (VerificationTest.action.ilike(like))
@@ -66,7 +68,7 @@ class VerificationTestRepository:
                     VerificationTest.sub_requirement_id.is_(None),
                 )
             )
-        stmt = stmt.offset(skip).limit(limit).order_by(VerificationTest.key)
+        stmt = stmt.offset(skip).limit(limit).order_by(VerificationTest.title)
         return list(self.session.exec(stmt).all())
 
     def create(self, obj: VerificationTest) -> VerificationTest:
