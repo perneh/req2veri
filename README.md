@@ -25,6 +25,7 @@ Details and more examples: [docs/docker-compose.md](docs/docker-compose.md), [do
 | Backend (API, env, migrations, seed) | [backend/README.md](backend/README.md) |
 | Frontend (dev, build, i18n) | [frontend/README.md](frontend/README.md) |
 | **Using the web UI** (login, pages, language) | [frontend/HOWTO.md](frontend/HOWTO.md) |
+| **User manual** (why/how per screen, with screenshots) | [external_frontend_tests/docs_suite/output/index.md](external_frontend_tests/docs_suite/output/index.md) — *created by* [regenerating the docs suite](external_frontend_tests/docs_suite/README.md) |
 | Helm chart details | [deploy/helm/README.md](deploy/helm/README.md) |
 
 ## Tests (without Docker)
